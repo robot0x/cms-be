@@ -1,0 +1,6 @@
+.DS_Store
+node_modules/
+test/
+logs/
+npm-debug.log
+selenium-debug.log

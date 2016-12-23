@@ -1,0 +1,31 @@
+{
+    "appenders":
+        [
+            {
+                "type":"console",
+                "category":"console"
+            },
+            {
+                "category":"log_file",
+                "type": "console",
+                "filename": "./logs/cms.log",
+                "maxLogSize": 104800,
+                "backups": 100
+            },
+            {
+                "category":"log_date",
+                "type": "console",
+                "filename": "./logs/",
+                "alwaysIncludePattern": true,
+                "pattern": "yyyyMMddhh.log"
+
+            }
+        ],
+    "replaceConsole": true,
+    "levels":
+    {
+        "log_file":"ALL",
+        "console":"ALL",
+        "log_date":"ALL"
+    }
+}

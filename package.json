@@ -1,0 +1,24 @@
+{
+  "name": "cms-be",
+  "version": "1.0.0",
+  "description": "有调CMS系统后端",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [
+    "有调",
+    "cms",
+    "BackEnd"
+  ],
+  "author": "liyanfeng",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.4.7",
+    "express": "^4.14.0",
+    "lodash": "^4.17.2",
+    "log4js": "^1.1.0",
+    "promise-mysql": "^3.0.0"
+  }
+}
