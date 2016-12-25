@@ -1,6 +1,6 @@
 CREATE TABLE `article_meta` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
-  `cid` int(10) unsigned NOT NULL COMMENT '文章的id',
+  `nid` int(10) unsigned NOT NULL COMMENT '文章的短id',
   `title` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '文章title',
   `ctype` tinyint(2) unsigned COMMENT '文章类型',
   `create_time` timestamp(0) NOT NULL COMMENT '商品创建时间',

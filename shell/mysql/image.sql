@@ -1,4 +1,4 @@
-CREATE TABLE `article_meta` (
+CREATE TABLE `image` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
   `cid` int(10) unsigned NOT NULL COMMENT '文章的id',
   `url` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '图片url',
