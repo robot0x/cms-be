@@ -1,6 +1,8 @@
 class ImageTable{
 
-  static getById(){
+  static columns = []
+
+  static getById(id){
 
   }
 
@@ -8,27 +10,31 @@ class ImageTable{
 
   }
 
+  static getByUrl(url){
+
+  }
+
   static getByCond(cond){
 
   }
 
-  static update(author, cond){
+  static update(iamge, cond){
 
   }
 
-  static save(){
+  static save(iamge){
 
   }
 
-  static deleteById(){
+  static deleteById(id){
 
   }
 
-  static deleteByName(){
+  static deleteByUrl(url){
 
   }
 
-  static deleteByCond(){
+  static deleteByCond(cond){
 
   }
 

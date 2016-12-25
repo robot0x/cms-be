@@ -8,7 +8,7 @@ class AuthorTable{
 
   }
 
-  static getByName(cond){
+  static getByName(name){
 
   }
 
@@ -20,19 +20,19 @@ class AuthorTable{
 
   }
 
-  static save(){
+  static save(author){
 
   }
 
-  static deleteById(){
+  static deleteById(id){
 
   }
 
-  static deleteByName(){
+  static deleteByName(name){
 
   }
 
-  static deleteByCond(){
+  static deleteByCond(cond){
 
   }
 

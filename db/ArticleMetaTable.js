@@ -19,23 +19,23 @@ class ArticleMetaTable{
   static getByCond(cond){
 
   }
-  static update(author, cond){
+  static update(meta, cond){
 
   }
 
-  static save(){
+  static save(meta){
 
   }
 
-  static deleteById(){
+  static deleteById(id){
 
   }
 
-  static deleteByName(){
+  static deleteByName(name){
 
   }
 
-  static deleteByCond(){
+  static deleteByCond(cond){
 
   }
 

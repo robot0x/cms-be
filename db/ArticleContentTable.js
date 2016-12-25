@@ -1,6 +1,6 @@
 class ArticleContentTable{
 
-  static getById(){
+  static getById(id){
 
   }
 
@@ -12,23 +12,23 @@ class ArticleContentTable{
 
   }
 
-  static update(author, cond){
+  static update(article, cond){
 
   }
 
-  static save(){
+  static save(aritcle){
 
   }
 
-  static deleteById(){
+  static deleteById(id){
 
   }
 
-  static deleteByName(){
+  static deleteByName(name){
 
   }
 
-  static deleteByCond(){
+  static deleteByCond(cond){
 
   }
 
