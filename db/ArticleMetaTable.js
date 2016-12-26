@@ -1,41 +1,42 @@
-class ArticleMetaTable{
+class ArticleMetaTable {
 
-  static getAll(){
-
-  }
-
-  static getById(id){
+  static getAll () {
 
   }
 
-  static getByNid(nid){
+  static getById (id) {
 
   }
 
-  static getByTitle(title){
+  static getByNid (nid) {
 
   }
 
-  static getByCond(cond){
-
-  }
-  static update(meta, cond){
+  static getByTitle (title) {
 
   }
 
-  static save(meta){
+  static getByCond (cond) {
 
   }
 
-  static deleteById(id){
+  static update (meta, cond) {
 
   }
 
-  static deleteByName(name){
+  static save (meta) {
 
   }
 
-  static deleteByCond(cond){
+  static deleteById (id) {
+
+  }
+
+  static deleteByName (name) {
+
+  }
+
+  static deleteByCond (cond) {
 
   }
 

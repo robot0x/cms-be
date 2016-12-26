@@ -1,38 +1,38 @@
-class AuthorTable{
+class AuthorTable {
 
-  static getAll(){
-
-  }
-
-  static getById(nid){
+  static getAll () {
 
   }
 
-  static getByName(name){
+  static getById (nid) {
 
   }
 
-  static getByCond(cond){
+  static getByName (name) {
 
   }
 
-  static update(author, cond){
+  static getByCond (cond) {
 
   }
 
-  static save(author){
+  static update (author, cond) {
 
   }
 
-  static deleteById(id){
+  static save (author) {
 
   }
 
-  static deleteByName(name){
+  static deleteById (id) {
 
   }
 
-  static deleteByCond(cond){
+  static deleteByName (name) {
+
+  }
+
+  static deleteByCond (cond) {
 
   }
 

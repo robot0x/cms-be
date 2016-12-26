@@ -1,40 +1,47 @@
-class ImageTable{
+class ImageTable {
 
-  static columns = []
+  static get columns () {
+    return [
+      '',
+      '',
+      '',
+      ''
+    ]
+  }
 
-  static getById(id){
+  static getById (id) {
 
   }
 
-  static getByNid(nid){
+  static getByNid (nid) {
 
   }
 
-  static getByUrl(url){
+  static getByUrl (url) {
 
   }
 
-  static getByCond(cond){
+  static getByCond (cond) {
 
   }
 
-  static update(iamge, cond){
+  static update (iamge, cond) {
 
   }
 
-  static save(iamge){
+  static save (iamge) {
 
   }
 
-  static deleteById(id){
+  static deleteById (id) {
 
   }
 
-  static deleteByUrl(url){
+  static deleteByUrl (url) {
 
   }
 
-  static deleteByCond(cond){
+  static deleteByCond (cond) {
 
   }
 

@@ -1,34 +1,34 @@
-class ArticleContentTable{
+class ArticleContentTable {
 
-  static getById(id){
-
-  }
-
-  static getByNid(nid){
+  static getById (id) {
 
   }
 
-  static getByCond(cond){
+  static getByNid (nid) {
 
   }
 
-  static update(article, cond){
+  static getByCond (cond) {
 
   }
 
-  static save(aritcle){
+  static update (article, cond) {
 
   }
 
-  static deleteById(id){
+  static save (aritcle) {
 
   }
 
-  static deleteByName(name){
+  static deleteById (id) {
 
   }
 
-  static deleteByCond(cond){
+  static deleteByName (name) {
+
+  }
+
+  static deleteByCond (cond) {
 
   }
 
