@@ -1,4 +1,5 @@
 {
-  "article" : "article",
-  ""
+  "articles" : "articles",
+  "authors": "authors",
+  "images": "images"
 }

@@ -1,5 +1,0 @@
-class Service{
-  constructor(){
-    
-  }
-}

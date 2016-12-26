@@ -4,5 +4,6 @@
     "password":"sqltest",
     "database":"cms",
     "charset":"utf8mb4",
-    "multipleStatement":true
+    "multipleStatement":true,
+    "connectionLimit": 15
  }
