@@ -30,6 +30,7 @@ class Utils {
   }
 
   // 获取文件扩展名
+  // http://leftstick.github.io/tech/2016/04/23/how-to-get-the-file-extension-more-efficiently
   static getFileExtension( filename = '' ) {
     return filename.slice((filename.lastIndexOf('.') - 1 >>> 0) + 2)
   }
