@@ -1,6 +1,9 @@
-
+const DB = require('./DB')
+const db = new DB()
 class ArticleMetaTable {
-
+  static get table(){
+    return 'article_meta'
+  }
   static get columns () {
     return [
       'id', // int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
@@ -17,7 +20,12 @@ class ArticleMetaTable {
   }
 
   static getAll () {
-
+    db.getConnection().then(connection => {
+      const sql = `select ${ArticleMetaTable.columns.join(',')} from ${ArticleMetaTable.table}`
+      connection.query(sql).then(rows => {
+        console.log(rows);
+      })
+    })
   }
 
   static getById (id) {

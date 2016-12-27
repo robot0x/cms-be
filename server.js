@@ -34,7 +34,7 @@ app.use(function (err, req, res, next) {
   // 服务端错误
   return res.json({
     status: 500,
-    explain: err.stack
+    message: err.stack
   })
 })
 router.use(Utils.bodyJSON)
@@ -47,7 +47,7 @@ function requestHandler (req, res, next) {
     // 非法action
     return res.json({
       status: 404,
-      explain: 'Invalid action'
+      message: 'Invalid action'
     })
   }
   const APIINPUT = req.APIINPUT
@@ -56,7 +56,7 @@ function requestHandler (req, res, next) {
     // 参数不符合要求
     return res.json({
       status: 400,
-      explain: 'Invalid param'
+      message: 'Invalid param'
     })
   }
   const method = req.method

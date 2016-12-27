@@ -6,20 +6,20 @@ class Utils {
       return void 0
     }
     const C = Math.pow(2, 32)
-  // 如果cid大于常数，我们认为就是长ID，直接返回即可，否则再进行处理
+    // 如果cid大于常数，我们认为就是长ID，直接返回即可，否则再进行处理
     return cid > C
     ? cid
     : (C + 1) * cid
   }
 
- // 长id短id
+  // 长id短id
   static getShortCid (cid) {
     if (cid == void 0) {  // eslint-disable-line
       return void 0
     }
     const C = Math.pow(2, 32)
-  // 如果cid大于常数，我们认为就是长ID，直接返回即可，否则再进行处理
-    return cid > C
+    // 如果cid小于常数，我们认为就是短ID，直接返回即可，否则再进行处理
+    return cid < C
     ? cid & 0xffffff
     : cid
   }
@@ -74,7 +74,7 @@ class Utils {
         // explain: 'Method not allowed'
         res.json({
           status: 405,
-          explain: 'Invalid method'
+          message: 'Invalid method'
           // explain: 'Method not allowed'
         })
       }

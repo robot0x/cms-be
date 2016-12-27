@@ -8,8 +8,9 @@ class ArticlesService{
   save(param){
     console.log('ArticlesService save...', param);
     const meta = {
-      
+
     }
+
 
   }
   delete(param){
@@ -22,6 +23,10 @@ class ArticlesService{
   }
   list(param){
     console.log('ArticlesService list...', param);
+    ArticleContentTable.getAll().then((rows) => {
+      console.log('-----------asdsa--------------');
+      console.log(rows);
+    })
   }
 }
 
