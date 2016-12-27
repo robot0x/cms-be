@@ -3,7 +3,6 @@ const express = require('express')
 const app = express()
 const router = express.Router()
 const compression = require('compression')()
-const Utils = require('./utils/Utils')
 const config = require('./package').config
 const API = require('./config/api')
 const ServiceFactory = require('./service/ServiceFactory')
@@ -25,9 +24,9 @@ console.log(API)
 // 启动压缩
 app.use(compression)
 // 处理options请求。设置response对象的可允许跨域的header信息
-app.use(Utils.allowCors)
+app.use(allowCors)
 // 解析request对象中的body数据。处理好之后放到request对象上的body属性上供后续使用。
-app.use(Utils.bodyParse)
+app.use(bodyParse)
 // 把路由挂载至应用 不以根目录开始，以根目录下的 cms 目录作为路由中间件的开始匹配位置
 app.use(`/${config.root}`, router)
 app.use(function (err, req, res, next) {
@@ -37,7 +36,7 @@ app.use(function (err, req, res, next) {
     message: err.stack
   })
 })
-router.use(Utils.bodyJSON)
+router.use(bodyJSON)
 router.all(/(\w+)/i, requestHandler)
 // router.all(/(\w+)(\/:p)?/i, requestHandler)
 function requestHandler (req, res, next) {
@@ -92,5 +91,58 @@ function requestHandler (req, res, next) {
 function checkArgs (action, arg) {
   return true
 }
+
+
+// 请求数据parse
+function bodyJSON (req, res, next) {
+      const method = req.method
+      if(['POST','PUT','PATCH'].indexOf(method) !== -1){
+
+        req.APIINPUT = JSON.parse(req.body)
+        next() // 没有这一行，所有接口都会hang住
+
+      }else if(['GET', 'DELETE'].indexOf(method) !== -1){
+
+        req.APIINPUT = req.query
+        next() // 没有这一行，所有接口都会hang住
+      } else {
+        // explain: 'Method not allowed'
+        res.json({
+          status: 405,
+          message: 'Invalid method'
+          // explain: 'Method not allowed'
+        })
+      }
+}
+
+// 处理request请求数据
+function bodyParse (req, res, next) {
+  let data = ''
+    // 取出请求数据
+  req.on('data', chunk => data += chunk) // eslint-disable-line
+
+  req.on('end', () => {
+       // 把请求数据放到request对象上的body属性中
+    req.body = data
+    console.log(req.body)
+    if (data) {
+      console.log(`[parseBody function] the data is ${req.body}`)
+    }
+    next()
+  })
+}
+
+function allowCors (req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+  res.header('Access-Control-Allow-Headers', 'Content-Type,Content-Length,Authorization,X-Request-With')
+
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200)
+  } else {
+    next()
+  }
+}
+
 
 app.listen(config.port)

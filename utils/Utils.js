@@ -29,56 +29,11 @@ class Utils {
     return Date.now() / divisor
   }
 
-  static allowCors (req, res, next) {
-    res.header('Access-Control-Allow-Origin', '*')
-    res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-    res.header('Access-Control-Allow-Headers', 'Content-Type,Content-Length,Authorization,X-Request-With')
-
-    if (req.method === 'OPTIONS') {
-      res.sendStatus(200)
-    } else {
-      next()
-    }
+  // 获取文件扩展名
+  static getFileExtension( filename = '' ) {
+    return filename.slice((filename.lastIndexOf('.') - 1 >>> 0) + 2)
   }
 
-  // 处理request请求数据
-  static bodyParse (req, res, next) {
-    let data = ''
-      // 取出请求数据
-    req.on('data', chunk => data += chunk) // eslint-disable-line
-
-    req.on('end', () => {
-         // 把请求数据放到request对象上的body属性中
-      req.body = data
-      console.log(req.body)
-      if (data) {
-        console.log(`[parseBody function] the data is ${req.body}`)
-      }
-      next()
-    })
-  }
-
-  // 请求数据parse
-  static bodyJSON (req, res, next) {
-      const method = req.method
-      if(['POST','PUT','PATCH'].indexOf(method) !== -1){
-
-        req.APIINPUT = JSON.parse(req.body)
-        next() // 没有这一行，所有接口都会hang住
-
-      }else if(['GET', 'DELETE'].indexOf(method) !== -1){
-
-        req.APIINPUT = req.query
-        next() // 没有这一行，所有接口都会hang住
-      } else {
-        // explain: 'Method not allowed'
-        res.json({
-          status: 405,
-          message: 'Invalid method'
-          // explain: 'Method not allowed'
-        })
-      }
-  }
 }
 
 module.exports = Utils
