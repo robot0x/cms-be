@@ -18,10 +18,10 @@ class Utils {
       return void 0
     }
     const C = Math.pow(2, 32)
-    // 如果cid小于常数，我们认为就是短ID，直接返回即可，否则再进行处理
-    return cid < C
-    ? cid & 0xffffff
-    : cid
+    // 如果cid大于常数，我们认为就是长ID，转成短ID，否则直接返回
+    return cid > C
+      ? cid & 0xffffff
+      : cid;
   }
 
   // 获取stamp
