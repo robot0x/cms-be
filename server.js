@@ -59,6 +59,11 @@ function requestHandler (req, res, next) {
     })
   }
   const method = req.method
+  /**
+   * 调用栈：
+   *  ServiceFactory -> ArticlesService.js -> ArticleContentTable.js -> DB.js
+   *  层层返回Promise，释放connection和事务处理在xxxTable.js中进行
+   */
   const factory = new ServiceFactory(action)
   const service = factory.getService()
   console.log(service);
@@ -81,7 +86,10 @@ function requestHandler (req, res, next) {
       res.json(APIINPUT)
       break
     case 'GET':    // 查
-      service.list(APIINPUT, true)
+      service.list(APIINPUT, true).then(rows => {
+        console.log('service.js list....');
+        console.log(rows);
+      })
       res.json(APIINPUT)
       break
   }

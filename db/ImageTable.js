@@ -1,7 +1,8 @@
-class ImageTable {
+const Table = require('./Table')
 
-  static get columns () {
-    return [
+class ImageTable extends Table{
+  constructor(){
+    super('image', [
       `id`, // bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
       `nid`, // int(11) unsigned NOT NULL COMMENT '文章的id',
       `url`, // text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '图片url',
@@ -11,44 +12,16 @@ class ImageTable {
       `width`, // smallint(4) unsigned NOT NULL COMMENT '上传时的原始宽度，单位为px',
       `height`, // smallint(4) unsigned NOT NULL COMMENT '上传时的原始高度，单位为px',
       `create_time`, // timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '图片上传时间',
-      `data` // text COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '冗余字段',
-    ]
+      // `data` // text COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '冗余字段',
+    ])
   }
 
-  static getById (id) {
-
+  getByUrl (url) {
+      super.getByCond(`url = ${url}`)
   }
 
-  static getByNid (nid) {
-
-  }
-
-  static getByUrl (url) {
-
-  }
-
-  static getByCond (cond) {
-
-  }
-
-  static update (iamge, cond) {
-
-  }
-
-  static save (iamge) {
-
-  }
-
-  static deleteById (id) {
-
-  }
-
-  static deleteByUrl (url) {
-
-  }
-
-  static deleteByCond (cond) {
-
+  deleteByUrl (url) {
+      super.deleteByCond(`url = ${url}`)
   }
 
 }

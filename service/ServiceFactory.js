@@ -22,7 +22,7 @@ class ServiceFactory{
         serviceInstance = new ImagesService()
         break;
     }
-    console.log(serviceInstance);
+    // console.log(serviceInstance);
     return serviceInstance
   }
 

@@ -1,10 +1,14 @@
 const ArticleMetaTable = require('../db/ArticleMetaTable')
 const ArticleContentTable = require('../db/ArticleContentTable')
 
+const table = new ArticleContentTable()
+
 class ArticlesService{
+
   constructor(){
     console.log('ArticlesService 实例化....');
   }
+
   save(param){
     console.log('ArticlesService save...', param);
     const meta = {
@@ -23,9 +27,16 @@ class ArticlesService{
   }
   list(param){
     console.log('ArticlesService list...', param);
-    ArticleContentTable.getAll().then((rows) => {
-      console.log('-----------asdsa--------------');
-      console.log(rows);
+    return new Promise((resolve, reject) => {
+      table
+      .getAll()
+      .then(rows => {
+        resolve(rows)
+      })
+      .catch(err => {
+        reject(err)
+        console.log(err)
+      })
     })
   }
 }
