@@ -1,16 +1,20 @@
-const API = require('../config/api')
 const ArticlesService = require('./ArticlesService')
 const AuthorsService = require('./AuthorsService')
-const ImagesService = require('./ImagesService');
+const ImagesService = require('./ImagesService')
 
+/**
+ * 业务类工厂
+ *  在server.js中调用
+ *  根据不同的请求来初始化相应的业务类
+ */
 class ServiceFactory{
+
   constructor(action){
     this.action = action
   }
 
   getService(){
     let serviceInstance = null
-    console.log('------------' + this.action );
     switch (this.action) {
       case 'articles':
         serviceInstance = new ArticlesService()
@@ -22,7 +26,6 @@ class ServiceFactory{
         serviceInstance = new ImagesService()
         break;
     }
-    // console.log(serviceInstance);
     return serviceInstance
   }
 

@@ -64,8 +64,8 @@ function requestHandler (req, res, next) {
    *  ServiceFactory -> ArticlesService.js -> ArticleContentTable.js -> DB.js
    *  层层返回Promise，释放connection和事务处理在xxxTable.js中进行
    */
-  const factory = new ServiceFactory(action)
-  const service = factory.getService()
+  const serviceFactory = new ServiceFactory(action)
+  const service = serviceFactory.getService()
   console.log(service);
   switch (method) {
     case 'POST':   // 增
@@ -86,7 +86,7 @@ function requestHandler (req, res, next) {
       res.json(APIINPUT)
       break
     case 'GET':    // 查
-      service.list(APIINPUT, true).then(rows => {
+      service.list(APIINPUT).then(rows => {
         console.log('service.js list....');
         console.log(rows);
       })

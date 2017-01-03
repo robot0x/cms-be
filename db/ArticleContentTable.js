@@ -1,4 +1,4 @@
-const Table = require('./Table');
+const Table = require('./Table')
 
 class ArticleContentTable extends Table{
   constructor(){
