@@ -6,6 +6,8 @@ const compression = require('compression')()
 const config = require('./package').config
 const API = require('./config/api')
 const ServiceFactory = require('./service/ServiceFactory')
+const _ = require('lodash')
+const server_timestamp = _.now()
 /**
   200 OK - [GET]：服务器成功返回用户请求的数据，该操作是幂等的（Idempotent）。
   201 CREATED - [POST/PUT/PATCH]：用户新建或修改数据成功。
@@ -20,7 +22,6 @@ const ServiceFactory = require('./service/ServiceFactory')
   422 Unprocesable entity - [POST/PUT/PATCH] 当创建一个对象时，发生一个验证错误。
   500 INTERNAL SERVER ERROR - [*]：服务器发生错误，用户将无法判断发出的请求是否成功。
  */
-console.log(API)
 // 启动压缩
 app.use(compression)
 // 处理options请求。设置response对象的可允许跨域的header信息
@@ -33,32 +34,49 @@ app.use(function (err, req, res, next) {
   // 服务端错误
   return res.json({
     status: 500,
-    message: err.stack
+    server_timestamp: server_timestamp,
+    message: `后端报错：${err.stack}`
   })
 })
+
+/**
+ * 有可能返回错误信息，但是数据库却更新成功了
+ */
+
 router.use(bodyJSON)
 router.all(/(\w+)/i, requestHandler)
-// router.all(/(\w+)(\/:p)?/i, requestHandler)
+
 function requestHandler (req, res, next) {
   const p = req.params[0]
   const action = API[p]
+  // 返回给调用端的数据
+  const ret = {
+    status: 200,
+    message: 'SUCCESS',
+    server_timestamp: server_timestamp
+  }
+
   if (!action) {
-    // 非法action
-    return res.json({
-      status: 404,
-      message: 'Invalid action'
-    })
+    ret.status = 404
+    ret.message = 'Invalid action'
+    return res.json( ret )
   }
+
   const APIINPUT = req.APIINPUT
-  const paramValid = checkArgs(p, APIINPUT)
-  if (!paramValid) {
-    // 参数不符合要求
-    return res.json({
-      status: 400,
-      message: 'Invalid param'
-    })
+  if( APIINPUT && !_.isEmpty(APIINPUT) ){
+    ret.APIINPUT = APIINPUT
   }
-  const method = req.method
+  const method = req.method.toUpperCase()
+  const paramCheck = checkArgs(action, method, APIINPUT)
+  const isValid = paramCheck.isValid
+
+  if (!isValid) {
+    ret.status = 400
+    ret.message = `Invalid param：${paramCheck.message}`
+    // 参数不符合要求
+    return res.json(ret)
+  }
+
   /**
    * 调用栈：
    *  ServiceFactory -> ArticlesService.js -> ArticleContentTable.js -> DB.js
@@ -66,61 +84,115 @@ function requestHandler (req, res, next) {
    */
   const serviceFactory = new ServiceFactory(action)
   const service = serviceFactory.getService()
-  console.log(service);
+  let promise = null
   switch (method) {
     case 'POST':   // 增
-      // res.send(`/${action} post`)
-      service.save(APIINPUT)
-      res.json(APIINPUT)
+      promise = service.save(APIINPUT)
       break
     case 'DELETE': // 删
-      service.delete(APIINPUT)
-      res.json(APIINPUT)
+      promise = service.delete(APIINPUT)
       break
     case 'PUT':    // 改
-      service.update(APIINPUT)
-      res.json(APIINPUT)
+      promise = service.update(APIINPUT)
       break
-    case 'PATCH':    // 改
-      service.update(APIINPUT, true)
-      res.json(APIINPUT)
-      break
+    // case 'PATCH':  // 改
+    //   promise = service.update(APIINPUT, true)
+    //   break
     case 'GET':    // 查
-      service.list(APIINPUT).then(rows => {
-        console.log('service.js list....');
-        console.log(rows);
-      })
-      res.json(APIINPUT)
+      promise = service.list(APIINPUT)
       break
+    default:
+      ret.status = 405
+      ret.message = 'Invalid method'
+      res.json(ret)
+  }
+
+  if( promise ){
+    promise
+    .then(result => {
+      ret.res = result
+      res.json(ret)
+    })
+    .catch( err => {
+      console.log(err)
+      ret.status = 500
+      ret.message = `后端报错：${err.stack}`
+      res.json(ret)
+    })
   }
 
 }
 
-function checkArgs (action, arg) {
-  return true
-}
+function checkArgs (action, method, arg) {
+  // 如果没有arg，就不用检查
+  if(!arg) {
+    return {
+      isValid: true
+    }
+  }
+  // DELETE POST PUT 都需要传参数，无参数，就提示
+  if(['DELETE','POST', 'PUT'].indexOf(method) !== -1){
+    if(_.isEmpty(arg)){
+      return {
+        isValid: false,
+        message: '参数不能为空'
+      }
+    }
+    // DELETE PUT 由于必修要指定对那个资源进行操作，所以必须有id
+    if( method !== 'POST' ){
+      if( arg.id != null){
+        if(!_.toInteger(arg.id)){
+          return {
+            isValid: false,
+            message: 'id格式不正确'
+          }
+        }
+      }else{
+        return {
+          isValid: false,
+          message: '没有指定id'
+        }
+      }
+    }
+  }
+  // 如果参数中有 id 和 limit 则其类型必须是整数类型
+  if( arg.id != null){
+    if( !_.toInteger(arg.id) ){
+      return {
+        isValid: false,
+        message: 'id格式不正确'
+      }
+    }
+  }
 
+  if( arg.limit != null){
+    if( !_.toInteger(arg.limit) ){
+      return {
+        isValid: false,
+        message: 'limit格式不正确'
+      }
+    }
+  }
+
+  return {
+    isValid: true
+  }
+}
 
 // 请求数据parse
 function bodyJSON (req, res, next) {
-      const method = req.method
-      if(['POST','PUT','PATCH'].indexOf(method) !== -1){
-
-        req.APIINPUT = JSON.parse(req.body)
-        next() // 没有这一行，所有接口都会hang住
-
-      }else if(['GET', 'DELETE'].indexOf(method) !== -1){
-
-        req.APIINPUT = req.query
-        next() // 没有这一行，所有接口都会hang住
-      } else {
-        // explain: 'Method not allowed'
-        res.json({
-          status: 405,
-          message: 'Invalid method'
-          // explain: 'Method not allowed'
-        })
-      }
+    const method = req.method
+    if(['POST','PUT'].indexOf(method) !== -1){
+        try{
+          // 如果 req.body 为 空字符串或裸字符串，则parse会出异常
+          req.APIINPUT = JSON.parse(req.body)
+        }catch(e){
+          req.APIINPUT = {}
+        }
+    }else if(['GET', 'DELETE'].indexOf(method) !== -1){
+      req.APIINPUT = req.query
+    }
+    next() // 没有这一行，所有接口都会hang住
 }
 
 // 处理request请求数据
@@ -128,11 +200,13 @@ function bodyParse (req, res, next) {
   let data = ''
     // 取出请求数据
   req.on('data', chunk => data += chunk) // eslint-disable-line
-
+  /**
+   *
+   */
   req.on('end', () => {
-       // 把请求数据放到request对象上的body属性中
+    // 把请求数据放到request对象上的body属性中
+    // GET DELETE body为一个空行
     req.body = data
-    console.log(req.body)
     if (data) {
       console.log(`[parseBody function] the data is ${req.body}`)
     }

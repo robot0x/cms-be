@@ -14,11 +14,11 @@ class AuthorTable extends Table{
   }
 
   getByName (name) {
-    super.getByCond(`name = ${name}`)
+    return super.getByCond(`name = ${name}`)
   }
 
   deleteByName (name) {
-    super.deleteByCond(`name = ${name}`)
+    return super.deleteByCond(`name = ${name}`)
   }
 }
 

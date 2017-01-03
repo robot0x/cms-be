@@ -4,7 +4,7 @@ const mysql = require('promise-mysql')
  * 提供基础的与数据库相关的工具方法
  */
 class DB{
-  
+
   constructor(){
     this.initPool()
   }
@@ -26,7 +26,6 @@ class DB{
    * 转码，防止sql注入
    */
   escape(str){
-    console.log('escape------')
     return this.pool.escape(str)
   }
 

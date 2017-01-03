@@ -15,8 +15,11 @@ class Table {
     this.columns = columns
     this.db = db
   }
-
+  /**
+   *  根据参数，调用不同的方法
+   */
   list(nid, limit){
+    // 门面模式
     nid = _.toInteger(nid)
     limit = _.toInteger(limit)
     if( nid ){
@@ -53,33 +56,25 @@ class Table {
       sql += `limit ${limit} `
     }
 
-    console.log(sql)
     return this.exec(sql)
   }
 
-  update (data, cond) {
-
-    if(Array.isArray(data)){
-      data = data.join(',')
-    }
-
-    if(_.isObject(data)){
-      data = _.transform(data, (result, value, key) => { result.push(`${key}=${db.escape(value)}`) }, []);
-    }
-
-    const sql = `update ${this.table} set ${data} where ${cond}`
-    console.log(sql)
-    return this.exec(sql)
+  update (data) {
+    const id = data.id
+    delete data.id
+    const sql = `update ${this.table} set ? where nid = ${id}`
+    return this.exec(sql, data)
   }
 
   save (data) {
+    data.nid = data.id
+    delete data.id
     return this.exec(`insert into ${this.table} set ?`, data)
   }
 
   deleteByCond (cond = '') {
     const escapeValue = db.escapeValue(cond)
     const sql = `delete from ${this.table} where ${escapeValue.key} = ${escapeValue.value}`
-    console.log(sql)
     return this.exec(sql)
   }
 
@@ -92,6 +87,7 @@ class Table {
   }
 
   exec( sql = '', data){
+    console.log(sql)
     const self = this
     return new Promise((resolve, reject) => {
       self.db.getConnection().then(connection => {

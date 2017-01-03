@@ -17,11 +17,11 @@ class ImageTable extends Table{
   }
 
   getByUrl (url) {
-      super.getByCond(`url = ${url}`)
+      return super.getByCond(`url = ${url}`)
   }
 
   deleteByUrl (url) {
-      super.deleteByCond(`url = ${url}`)
+      return super.deleteByCond(`url = ${url}`)
   }
 
 }
