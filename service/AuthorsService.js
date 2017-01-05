@@ -1,3 +1,4 @@
+const Promise = require('bluebird')
 const AuthorTable = require('../db/AuthorTable')
 const authorTable = new AuthorTable()
 

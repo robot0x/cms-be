@@ -1,3 +1,4 @@
+const Promise = require('bluebird')
 const ImageTable = require('../db/ImageTable')
 const imageTable = new ImageTable()
 

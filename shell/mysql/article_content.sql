@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS `article_content`;
 CREATE TABLE `article_content` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
   `nid` int(11) unsigned NOT NULL COMMENT '文章id',

@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS `author`;
 CREATE TABLE `author` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '作者自增id',
   `name` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL unique COMMENT '帐号',

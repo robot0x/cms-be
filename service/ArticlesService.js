@@ -1,4 +1,5 @@
 const _ = require('lodash')
+const Promise = require('bluebird')
 const ArticleMetaTable = require('../db/ArticleMetaTable')
 const ArticleContentTable = require('../db/ArticleContentTable')
 const articleMetaTable = new ArticleMetaTable()

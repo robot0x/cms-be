@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS `image`;
 CREATE TABLE `image` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
   `nid` int(11) unsigned NOT NULL COMMENT '文章的id',
