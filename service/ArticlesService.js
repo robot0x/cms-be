@@ -4,11 +4,13 @@ const ArticleMetaTable = require('../db/ArticleMetaTable')
 const ArticleContentTable = require('../db/ArticleContentTable')
 const articleMetaTable = new ArticleMetaTable()
 const articleContentTable = new ArticleContentTable()
+const log4js = require('log4js')
+const logger = log4js.getLogger()
 
 class ArticlesService {
 
   constructor(){
-    console.log('ArticlesService 实例化了....')
+    logger.log('ArticlesService 实例化了....')
   }
 
   _getTableByType( type ){
@@ -22,7 +24,7 @@ class ArticlesService {
   }
 
   save(param){
-    console.log('ArticlesService save...', param)
+    logger.log('ArticlesService save...', param)
     return new Promise((resolve, reject) => {
       this._getTableByType(param.type)
           .save(param)
@@ -50,7 +52,7 @@ class ArticlesService {
   }
 
   list(param){
-    console.log('ArticlesService list...', param)
+    logger.log('ArticlesService list...', param)
     return new Promise((resolve, reject) => {
       this._getTableByType(param.type)
           .list(param.id, param.limit)

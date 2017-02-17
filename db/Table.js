@@ -45,7 +45,7 @@ class Table {
 
   getByCond ( cond = '1 = 1', limit ) {
 
-    let sql = `select ${this.columns.join(',')} from ${this.table} `
+    let sql = `select ${this.columns.join(',')}, (select count(1) from ${this.table}) as total from ${this.table} `
 
     if( cond ){
       const escapeValue = db.escapeValue(cond)
@@ -72,6 +72,13 @@ class Table {
     return this.exec(`insert into ${this.table} set ?`, data)
   }
 
+  saveMax (data) {
+    data.nid = data.id
+    delete data.id
+    // const sql = `insert into ${this.table} (nid, title,ctype,status,author) select MAX(nid) + 1, 'new article', 0, 2, 'liyanfeng' from article_meta`
+    return this.exec(`insert into ${this.table} set ?`, data)
+  }
+
   deleteByCond (cond = '') {
     const escapeValue = db.escapeValue(cond)
     const sql = `delete from ${this.table} where ${escapeValue.key} = ${escapeValue.value}`
@@ -88,6 +95,7 @@ class Table {
 
   exec( sql = '', data){
     console.log(sql)
+    console.log('98行：', data)
     const self = this
     return new Promise((resolve, reject) => {
       self.db.getConnection().then(connection => {

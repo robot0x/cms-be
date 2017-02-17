@@ -1,19 +1,18 @@
 const ArticlesService = require('./ArticlesService')
 const AuthorsService = require('./AuthorsService')
 const ImagesService = require('./ImagesService')
-
 /**
  * 业务类工厂
  *  在server.js中调用
  *  根据不同的请求来初始化相应的业务类
  */
-class ServiceFactory{
+class ServiceFactory {
 
-  constructor(action){
+  constructor(action) {
     this.action = action
   }
 
-  getService(){
+  getService() {
     let serviceInstance = null
     switch (this.action) {
       case 'articles':

@@ -8,6 +8,8 @@ const API = require('./config/api')
 const ServiceFactory = require('./service/ServiceFactory')
 const _ = require('lodash')
 const server_timestamp = _.now()
+const log4js = require('log4js')
+const logger = log4js.getLogger()
 /**
   200 OK - [GET]：服务器成功返回用户请求的数据，该操作是幂等的（Idempotent）。
   201 CREATED - [POST/PUT/PATCH]：用户新建或修改数据成功。
@@ -22,7 +24,7 @@ const server_timestamp = _.now()
   422 Unprocesable entity - [POST/PUT/PATCH] 当创建一个对象时，发生一个验证错误。
   500 INTERNAL SERVER ERROR - [*]：服务器发生错误，用户将无法判断发出的请求是否成功。
  */
-// 启动压缩
+// 启动压缩 -- 系统级中间件
 app.use(compression)
 // 处理options请求。设置response对象的可允许跨域的header信息
 app.use(allowCors)
@@ -30,6 +32,7 @@ app.use(allowCors)
 app.use(bodyParse)
 // 把路由挂载至应用 不以根目录开始，以根目录下的 cms 目录作为路由中间件的开始匹配位置
 app.use(`/${config.root}`, router)
+// 错误处理中间件
 app.use(function (err, req, res, next) {
   // 服务端错误
   return res.json({
@@ -42,10 +45,9 @@ app.use(function (err, req, res, next) {
 /**
  * 有可能返回错误信息，但是数据库却更新成功了
  */
-
+// 路由级中间件
 router.use(bodyJSON)
 router.all(/(\w+)/i, requestHandler)
-
 function requestHandler (req, res, next) {
   const p = req.params[0]
   const action = API[p]
@@ -86,13 +88,13 @@ function requestHandler (req, res, next) {
   const service = serviceFactory.getService()
   let promise = null
   switch (method) {
-    case 'POST':   // 增
+    case 'POST':   // 新增（add)
       promise = service.save(APIINPUT)
       break
     case 'DELETE': // 删
       promise = service.delete(APIINPUT)
       break
-    case 'PUT':    // 改
+    case 'PUT':    // 修改（update）
       promise = service.update(APIINPUT)
       break
     // case 'PATCH':  // 改
@@ -111,10 +113,11 @@ function requestHandler (req, res, next) {
     promise
     .then(result => {
       ret.res = result
+      logger.info(result);
       res.json(ret)
     })
     .catch( err => {
-      console.log(err)
+      logger.info(err)
       ret.status = 500
       ret.message = `后端报错：${err.stack}`
       res.json(ret)
@@ -131,7 +134,7 @@ function checkArgs (action, method, arg) {
     }
   }
   // DELETE POST PUT 都需要传参数，无参数，就提示
-  if(['DELETE','POST', 'PUT'].indexOf(method) !== -1){
+  if(['DELETE', 'PUT'].indexOf(method) !== -1){
     if(_.isEmpty(arg)){
       return {
         isValid: false,
@@ -139,19 +142,17 @@ function checkArgs (action, method, arg) {
       }
     }
     // DELETE PUT 由于必修要指定对那个资源进行操作，所以必须有id
-    if( method !== 'POST' ){
-      if( arg.id != null){
-        if(!_.toInteger(arg.id)){
-          return {
-            isValid: false,
-            message: 'id格式不正确'
-          }
-        }
-      }else{
+    if( arg.id != null){
+      if(!_.toInteger(arg.id)){
         return {
           isValid: false,
-          message: '没有指定id'
+          message: 'id格式不正确'
         }
+      }
+    } else {
+      return {
+        isValid: false,
+        message: '没有指定id'
       }
     }
   }
@@ -177,6 +178,7 @@ function checkArgs (action, method, arg) {
   return {
     isValid: true
   }
+
 }
 
 // 请求数据parse
@@ -192,6 +194,7 @@ function bodyJSON (req, res, next) {
     }else if(['GET', 'DELETE'].indexOf(method) !== -1){
       req.APIINPUT = req.query
     }
+    logger.info(req.APIINPUT)
     next() // 没有这一行，所有接口都会hang住
 }
 
@@ -208,7 +211,7 @@ function bodyParse (req, res, next) {
     // GET DELETE body为一个空行
     req.body = data
     if (data) {
-      console.log(`[parseBody function] the data is ${req.body}`)
+      logger.log(`[parseBody function] the data is ${req.body}`)
     }
     next()
   })

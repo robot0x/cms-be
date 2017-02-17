@@ -1,7 +1,7 @@
 const Table = require('./Table')
 
-class ArticleContentTable extends Table{
-  constructor(){
+class ArticleContentTable extends Table {
+  constructor() {
     super('article_content',
     [
       'id', // int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
