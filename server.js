@@ -194,7 +194,7 @@ function bodyJSON (req, res, next) {
     }else if(['GET', 'DELETE'].indexOf(method) !== -1){
       req.APIINPUT = req.query
     }
-    logger.info(req.APIINPUT)
+    logger.info('server.js 197:', req.APIINPUT)
     next() // 没有这一行，所有接口都会hang住
 }
 

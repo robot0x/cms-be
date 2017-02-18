@@ -2,7 +2,8 @@ const DB = require('./DB')
 const db = new DB()
 const Promise = require('bluebird')
 const _ = require('lodash')
-
+const log4js = require('log4js')
+const logger = log4js.getLogger()
 /**
  * 所有业务表要继承的基类
  * 提供了一些常用的数据库操作
@@ -27,7 +28,7 @@ class Table {
     }else if( limit ){
       return this.getByCond(null, limit)
     }else{
-      return this.getByCond()
+      return this.getByCond(null, null, 'order by last_update_time desc')
     }
   }
 
@@ -43,7 +44,7 @@ class Table {
     return this.getByCond(`nid = ${nid}`)
   }
 
-  getByCond ( cond = '1 = 1', limit ) {
+  getByCond ( cond = '1 = 1', limit, order ) {
 
     let sql = `select ${this.columns.join(',')}, (select count(1) from ${this.table}) as total from ${this.table} `
 
@@ -54,6 +55,10 @@ class Table {
 
     if( limit ){
       sql += `limit ${limit} `
+    }
+
+    if( order ){
+      sql += order
     }
 
     return this.exec(sql)
@@ -69,13 +74,15 @@ class Table {
   save (data) {
     data.nid = data.id
     delete data.id
-    return this.exec(`insert into ${this.table} set ?`, data)
+    logger.info('Table.js 73:', data)
+    const sql = `insert into ${this.table} (title) values ('新建文章')`
+    // return this.exec(`insert into ${this.table} set ?`, data)
+    return this.exec(sql)
   }
 
   saveMax (data) {
     data.nid = data.id
     delete data.id
-    // const sql = `insert into ${this.table} (nid, title,ctype,status,author) select MAX(nid) + 1, 'new article', 0, 2, 'liyanfeng' from article_meta`
     return this.exec(`insert into ${this.table} set ?`, data)
   }
 
@@ -95,7 +102,7 @@ class Table {
 
   exec( sql = '', data){
     console.log(sql)
-    console.log('98行：', data)
+    logger.info('Table.js 99:', data)
     const self = this
     return new Promise((resolve, reject) => {
       self.db.getConnection().then(connection => {

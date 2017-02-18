@@ -1,15 +1,15 @@
 const Promise = require('bluebird')
-const AuthorTable = require('../db/AuthorTable')
-const authorTable = new AuthorTable()
+const UserTable = require('../db/UserTable')
+const authorTable = new UserTable()
 
-class AuthorsService{
+class UsersService{
 
   constructor(){
-    console.log('AuthorService 实例化....');
+    console.log('UserService 实例化....');
   }
 
   save(param){
-    console.log('AuthorService save...', param)
+    console.log('UserService save...', param)
     return new Promise((resolve, reject) => {
       authorTable
           .save(param)
@@ -19,7 +19,7 @@ class AuthorsService{
   }
 
   delete(param){
-    console.log('AuthorService delete...', param)
+    console.log('UserService delete...', param)
     return new Promise((resolve, reject) => {
       authorTable
           .deleteByNid(param.id)
@@ -29,7 +29,7 @@ class AuthorsService{
   }
 
   update(param){
-    console.log('AuthorService update...', param)
+    console.log('UserService update...', param)
     return new Promise((resolve, reject) => {
       authorTable
           .update(param)
@@ -39,7 +39,7 @@ class AuthorsService{
   }
 
   list(param){
-    console.log('AuthorService list...', param)
+    console.log('UserService list...', param)
     return new Promise((resolve, reject) => {
       this._getTableByType(param.type)
           .list(param.id, param.limit)
@@ -49,4 +49,4 @@ class AuthorsService{
   }
 }
 
-module.exports = AuthorsService
+module.exports = UsersService

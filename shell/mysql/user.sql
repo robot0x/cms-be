@@ -1,5 +1,5 @@
-DROP TABLE IF EXISTS `author`;
-CREATE TABLE `author` (
+DROP TABLE IF EXISTS `user`;
+CREATE TABLE `user` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '作者自增id',
   `name` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL unique COMMENT '帐号',
   `password` varchar(20) NOT NULL COMMENT '密码',
@@ -10,4 +10,4 @@ CREATE TABLE `author` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='作者表';
 
-CREATE INDEX article_short_id on `author` (`register_time`,`online`)
+CREATE INDEX article_short_id on `user` (`register_time`,`online`)

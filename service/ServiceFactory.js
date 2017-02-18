@@ -1,5 +1,5 @@
 const ArticlesService = require('./ArticlesService')
-const AuthorsService = require('./AuthorsService')
+const UsersService = require('./UsersService')
 const ImagesService = require('./ImagesService')
 /**
  * 业务类工厂
@@ -19,7 +19,7 @@ class ServiceFactory {
         serviceInstance = new ArticlesService()
         break;
       case 'authors':
-        serviceInstance = new AuthorsService()
+        serviceInstance = new UsersService()
         break;
       case 'images':
         serviceInstance = new ImagesService()

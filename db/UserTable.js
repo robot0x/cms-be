@@ -1,8 +1,8 @@
 const Table = require('./Table')
 
-class AuthorTable extends Table{
+class UserTable extends Table{
   constructor(){
-    super('author', [
+    super('user', [
       'id', // int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '作者自增id',
       'name', // varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL unique COMMENT '帐号',
       'password', // varchar(30) NOT NULL COMMENT '密码',
@@ -22,4 +22,4 @@ class AuthorTable extends Table{
   }
 }
 
-module.exports = AuthorTable
+module.exports = UserTable
