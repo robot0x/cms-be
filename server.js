@@ -48,37 +48,41 @@ app.use(function (err, req, res, next) {
 // 路由级中间件
 router.use(bodyJSON)
 router.all(/(\w+)/i, requestHandler)
+
 function requestHandler (req, res, next) {
-  const p = req.params[0]
-  const action = API[p]
+  // 获取请求参数
+  const action = API[req.params[0]]
   // 返回给调用端的数据
-  const ret = {
+  const response = {
     status: 200,
     message: 'SUCCESS',
     server_timestamp: server_timestamp
   }
-
+  // 如果请求的接口不存在，返回404。只有3个接口可供调用，分别是 articles/ users/ images/
   if (!action) {
-    ret.status = 404
-    ret.message = 'Invalid action'
-    return res.json( ret )
+    response.status = 404
+    response.message = 'Invalid action'
+    return res.json( response )
   }
 
-  const APIINPUT = req.APIINPUT
-  if( APIINPUT && !_.isEmpty(APIINPUT) ){
-    ret.APIINPUT = APIINPUT
+  const body = req.body
+  if( body && !_.isEmpty(body) ){
+    response.body = body
   }
+  // logger.info('server.js 72:', body);
   const method = req.method.toUpperCase()
-  const paramCheck = checkArgs(action, method, APIINPUT)
+  const paramCheck = checkArgs(action, method, body)
   const isValid = paramCheck.isValid
 
   if (!isValid) {
-    ret.status = 400
-    ret.message = `Invalid param：${paramCheck.message}`
+    response.status = 400
+    response.message = `Invalid param：${paramCheck.message}`
     // 参数不符合要求
     return res.json(ret)
   }
 
+  logger.info('server.js 84:', body)
+  logger.info('server.js 85:', action)
   /**
    * 调用栈：
    *  ServiceFactory -> ArticlesService.js -> ArticleContentTable.js -> DB.js
@@ -89,61 +93,53 @@ function requestHandler (req, res, next) {
   let promise = null
   switch (method) {
     case 'POST':   // 新增（add)
-      promise = service.save(APIINPUT)
+      promise = service.create(body)
       break
     case 'DELETE': // 删
-      promise = service.delete(APIINPUT)
+      promise = service.delete(body)
       break
     case 'PUT':    // 修改（update）
-      promise = service.update(APIINPUT)
+      promise = service.update(body)
       break
-    // case 'PATCH':  // 改
-    //   promise = service.update(APIINPUT, true)
-    //   break
     case 'GET':    // 查
-      promise = service.list(APIINPUT)
+      promise = service.list(body)
       break
     default:
-      ret.status = 405
-      ret.message = 'Invalid method'
-      res.json(ret)
+      response.status = 405
+      response.message = 'Invalid method'
+      res.json(response)
   }
 
   if( promise ){
     promise
     .then(result => {
-      ret.res = result
-      logger.info(result);
-      res.json(ret)
+      response.res = result
+      // logger.info(result);
+      res.json(response)
     })
     .catch( err => {
       logger.info(err)
-      ret.status = 500
-      ret.message = `后端报错：${err.stack}`
-      res.json(ret)
+      response.status = 500
+      response.message = `后端报错：${err.stack}`
+      res.json(response)
     })
   }
 
 }
 
-function checkArgs (action, method, arg) {
-  // 如果没有arg，就不用检查
-  if(!arg) {
-    return {
-      isValid: true
-    }
-  }
+function checkArgs (action, method, body) {
+
   // DELETE POST PUT 都需要传参数，无参数，就提示
   if(['DELETE', 'PUT'].indexOf(method) !== -1){
-    if(_.isEmpty(arg)){
+    if(_.isEmpty(body)){
       return {
         isValid: false,
         message: '参数不能为空'
       }
     }
     // DELETE PUT 由于必修要指定对那个资源进行操作，所以必须有id
-    if( arg.id != null){
-      if(!_.toInteger(arg.id)){
+    if( body.id != null){
+      if(!_.toInteger(body.id)){
         return {
           isValid: false,
           message: 'id格式不正确'
@@ -157,20 +153,22 @@ function checkArgs (action, method, arg) {
     }
   }
   // 如果参数中有 id 和 limit 则其类型必须是整数类型
-  if( arg.id != null){
-    if( !_.toInteger(arg.id) ){
-      return {
-        isValid: false,
-        message: 'id格式不正确'
+  if(body){
+    if( body.id != null){
+      if( !_.toInteger(body.id) ){
+        return {
+          isValid: false,
+          message: 'id格式不正确'
+        }
       }
     }
-  }
 
-  if( arg.limit != null){
-    if( !_.toInteger(arg.limit) ){
-      return {
-        isValid: false,
-        message: 'limit格式不正确'
+    if( body.limit != null){
+      if( !_.toInteger(body.limit) ){
+        return {
+          isValid: false,
+          message: 'limit格式不正确'
+        }
       }
     }
   }
@@ -187,14 +185,14 @@ function bodyJSON (req, res, next) {
     if(['POST','PUT'].indexOf(method) !== -1){
         try{
           // 如果 req.body 为 空字符串或裸字符串，则parse会出异常
-          req.APIINPUT = JSON.parse(req.body)
+          req.body = JSON.parse(req.body)
         }catch(e){
-          req.APIINPUT = {}
+          req.body = null
         }
     }else if(['GET', 'DELETE'].indexOf(method) !== -1){
-      req.APIINPUT = req.query
+      req.body = req.query
     }
-    logger.info('server.js 197:', req.APIINPUT)
+    // logger.info('server.js 197:', req.body)
     next() // 没有这一行，所有接口都会hang住
 }
 

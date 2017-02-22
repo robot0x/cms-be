@@ -18,7 +18,7 @@ class ServiceFactory {
       case 'articles':
         serviceInstance = new ArticlesService()
         break;
-      case 'authors':
+      case 'users':
         serviceInstance = new UsersService()
         break;
       case 'images':

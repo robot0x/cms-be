@@ -10,6 +10,9 @@ class ArticleContentTable extends Table {
       // 'data' // text COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '冗余字段',
     ])
   }
+  exec(sql, data){
+    return super.exec(sql, data)
+  }
 }
 
 module.exports = ArticleContentTable

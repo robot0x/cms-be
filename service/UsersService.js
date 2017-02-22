@@ -1,50 +1,31 @@
 const Promise = require('bluebird')
 const UserTable = require('../db/UserTable')
 const authorTable = new UserTable()
+const userTable = new UserTable()
+const log4js = require('log4js')
+const logger = log4js.getLogger()
 
-class UsersService{
+class UsersService {
 
-  constructor(){
+  constructor () {
     console.log('UserService 实例化....');
   }
 
-  save(param){
-    console.log('UserService save...', param)
+  list (param) {
     return new Promise((resolve, reject) => {
-      authorTable
-          .save(param)
-          .then(result => resolve(result))
-          .catch(err => reject(err))
-    })
-  }
-
-  delete(param){
-    console.log('UserService delete...', param)
-    return new Promise((resolve, reject) => {
-      authorTable
-          .deleteByNid(param.id)
-          .then(result => resolve(result))
-          .catch(err => reject(err))
-    })
-  }
-
-  update(param){
-    console.log('UserService update...', param)
-    return new Promise((resolve, reject) => {
-      authorTable
-          .update(param)
-          .then(result => resolve(result))
-          .catch(err => reject(err))
-    })
-  }
-
-  list(param){
-    console.log('UserService list...', param)
-    return new Promise((resolve, reject) => {
-      this._getTableByType(param.type)
-          .list(param.id, param.limit)
-          .then(rows => resolve(rows))
-          .catch(err => reject(err))
+      logger.info('UsersService 14:', param)
+      const {offset, limit, id, user, password} = param
+      logger.info('UsersService 16:', user)
+      logger.info('UsersService 17:', password)
+      let promise = null
+      if(user && password){
+        promise = userTable.auth(user, password)
+      }
+      return promise
+              .then(result => {
+                resolve(result)
+              })
+              .catch(err => reject(err))
     })
   }
 }

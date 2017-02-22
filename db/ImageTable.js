@@ -15,14 +15,15 @@ class ImageTable extends Table{
       // `data` // text COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '冗余字段',
     ])
   }
-
-  getByUrl (url) {
-      return super.getByCond(`url = ${url}`)
+  exec(sql, data){
+    return super.exec(sql, data)
   }
-
-  deleteByUrl (url) {
-      return super.deleteByCond(`url = ${url}`)
-  }
+  // getByUrl (url) {
+  //     return super.getByCond(`url = ${url}`)
+  // }
+  // deleteByUrl (url) {
+  //     return super.deleteByCond(`url = ${url}`)
+  // }
 
 }
 

@@ -1,16 +1,18 @@
 DROP TABLE IF EXISTS `image`;
 CREATE TABLE `image` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
-  `nid` int(11) unsigned NOT NULL COMMENT '文章的id',
-  `url` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '图片url',
-  `type` tinyint(1) unsigned NOT NULL COMMENT '图片的类型。1-cover图-封面图/2-thumb图-缩略图/3-banner图/4-文章内容图',
+  `aid` int(11) unsigned NOT NULL COMMENT '文章的id',
+  `url` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '图片url',
+  `used` tinyint(1) unsigned NOT NULL COMMENT '是否被使用。0-未被使用，1-被使用',
+  -- [{type:0,seq:1},{type:0,sql:1},{type:3,seq:0},{type:3, seq:1}]
+  `type` text NOT NULL COMMENT '图片的类型。1-cover图-封面图/2-thumb图-缩略图/3-banner图',
   `origin_filename` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '上传时的文件名',
   `extension_name` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '图片扩展名，jpg/jpeg/png/gif...',
-  `width` smallint(4) unsigned NOT NULL COMMENT '上传时的原始宽度，单位为px',
-  `height` smallint(4) unsigned NOT NULL COMMENT '上传时的原始高度，单位为px',
+  `size` int unsigned NOT NULL COMMENT '图片尺寸。单位为byte',
+  `width` smallint(4) unsigned NOT NULL COMMENT '上传时的原始宽度。单位为px',
+  `height` smallint(4) unsigned NOT NULL COMMENT '上传时的原始高度。单位为px',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '图片上传时间',
-  `data` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '' COMMENT '冗余字段',
-  PRIMARY KEY (`id`, `nid`)
+  PRIMARY KEY (`id`, `aid`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='图片表';
 
-CREATE INDEX article_short_id on `image` (`nid`)
+-- CREATE INDEX article_short_id on `image` (`aid`)
