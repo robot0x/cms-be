@@ -57,8 +57,8 @@ class Table {
     })
   }
 
-  total(){
-    return this.exec(`SELECT count(id) AS count FROM ${this.table}`)
+  total(where = ''){
+    return this.exec(`SELECT count(id) AS count FROM ${this.table} ${where}`)
   }
 
   getById (id) {

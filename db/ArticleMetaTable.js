@@ -41,7 +41,7 @@ class ArticleMetaTable extends Table {
     let sql =  `SELECT ${this.columnsStr} FROM ${this.table} ${where} ${orderBy} ${limit} `
     return new Promise((resolve, reject) => {
       if(limit){
-        super.total().then(countRes => {
+        super.total(where).then(countRes => {
              super.exec(sql).then(result => {
                resolve({
                  total: countRes[0].count,
@@ -68,7 +68,7 @@ class ArticleMetaTable extends Table {
       let where = ` WHERE DATE_FORMAT('${month}', '%Y%m') = DATE_FORMAT(${this.orderByCol}, '%Y%m') `
       let sql =  `SELECT ${this.columnsStr} from ${this.table} ${where} ${orderBy} ${limit} `
       return new Promise((resolve, reject) => {
-          super.total().then(countRes => {
+          super.total(where).then(countRes => {
              super.exec(sql).then(result => {
                resolve({
                  total: countRes[0].count,
@@ -169,7 +169,7 @@ class ArticleMetaTable extends Table {
     const sql =  `SELECT ${this.columnsStr} from ${this.table} ${where} ${orderBy} ${limit} `
     return new Promise((resolve, reject) => {
       if(limit){
-        super.total().then(countRes => {
+        super.total(where).then(countRes => {
              super.exec(sql).then(result => {
                resolve({
                  total: countRes[0].count,
@@ -200,7 +200,7 @@ class ArticleMetaTable extends Table {
     const sql =  `SELECT ${this.columnsStr} from ${this.table} ${where} ${orderBy} ${limit} `
     return new Promise((resolve, reject) => {
       if(limit){
-        super.total().then(countRes => {
+        super.total(where).then(countRes => {
              super.exec(sql).then(result => {
                resolve({
                  total: countRes[0].count,
@@ -231,7 +231,7 @@ class ArticleMetaTable extends Table {
     const sql =  `SELECT ${this.columnsStr} from ${this.table} ${where} ${orderBy} ${limit} `
     return new Promise((resolve, reject) => {
       if(limit){
-        super.total().then(countRes => {
+        super.total(where).then(countRes => {
              super.exec(sql).then(result => {
                resolve({
                  total: countRes[0].count,
@@ -264,7 +264,7 @@ class ArticleMetaTable extends Table {
     const sql =  `SELECT ${this.columnsStr} from ${this.table} ${where} ${orderBy} ${limit} `
     return new Promise((resolve, reject) => {
       if(limit){
-        super.total().then(countRes => {
+        super.total(where).then(countRes => {
              super.exec(sql).then(result => {
                resolve({
                  total: countRes[0].count,
