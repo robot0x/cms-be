@@ -23,7 +23,7 @@ class ArticlesService {
 
     return new Promise((resolve, reject) => {
       logger.info('ArticlesService 20:', param)
-      const {offset, limit, id, title, ctype, user, time, type, author} = param
+      const {offset, limit, id, title, ctype, user, time, type, author, month} = param
       let limitObj = null
       let promise = null
       let isAll = false
@@ -40,7 +40,7 @@ class ArticlesService {
         promise = articleMetaTable.getById(id)
       }
 
-      if(param.title){
+      if(title){
         promise = articleMetaTable.getByTitle(title, null, limitObj, 'like' in param)
       }
 
@@ -52,17 +52,25 @@ class ArticlesService {
         promise = articleMetaTable.getByUser(user, null, limitObj, 'like' in param)
       }
 
-      if(param.author){
+      if(author){
         promise = articleMetaTable.getByAuthor(author, null, limitObj, 'like' in param)
       }
 
-      if(param.time){
+      if(time){
         promise = articleMetaTable.getByTime(time, null, limitObj)
       }
 
-      if(param.type && param.type === 'all'){
+      if(month){
+        promise = articleMetaTable.getByMonth(month + '-0', null, limitObj)
+      }
+
+      if(type){
+        if(type === 'all'){
           promise = articleMetaTable.all(id)
           isAll = true
+        } else if(type === 'monthly') {
+            promise = articleMetaTable.getStatisticsByMonthly()
+        }
       }
 
       if(!promise){

@@ -25,13 +25,113 @@ class ArticleMetaTable extends Table {
     'last_update_time'
     )
   }
+  /**
+   * title[String] 要查询的title
+   * orderBy[String] 排序字符串，如：order by last_update_time
+   * pagination[Object] 分页参数，如：{offset:0, limit: 50}
+   * isLike[Boolean] 是否是分页查询
+   */
+  getByTitle (title, orderBy, pagination, isLike) {
+    let where = ` WHERE title = '${title}' `
+    if(isLike){
+      where = ` WHERE title like '%${title}%' `
+    }
+    orderBy = orderBy || this._getOrderBy(orderBy)
+    let limit = this._getPagination(pagination)
+    let sql =  `SELECT ${this.columnsStr} FROM ${this.table} ${where} ${orderBy} ${limit} `
+    return new Promise((resolve, reject) => {
+      if(limit){
+        super.total().then(countRes => {
+             super.exec(sql).then(result => {
+               resolve({
+                 total: countRes[0].count,
+                 articles: result
+               })
+             })
+             .catch(({message}) => reject(message))
+          })
+          .catch(({message}) => reject(message))
+      }else{
+        super.exec(sql).then(result => {
+          resolve({
+            articles: result
+          })
+        })
+        .catch(({message}) => reject(message))
+      }
+    })
+  }
+
+  getByMonth (month, orderBy, pagination) {
+      orderBy = orderBy || this._getOrderBy(orderBy)
+      let limit = this._getPagination(pagination)
+      let where = ` WHERE DATE_FORMAT('${month}', '%Y%m') = DATE_FORMAT(${this.orderByCol}, '%Y%m') `
+      let sql =  `SELECT ${this.columnsStr} from ${this.table} ${where} ${orderBy} ${limit} `
+      return new Promise((resolve, reject) => {
+          super.total().then(countRes => {
+             super.exec(sql).then(result => {
+               resolve({
+                 total: countRes[0].count,
+                 articles: result
+               })
+             }).catch(({message}) => reject(message))
+          }).catch(({message}) => reject(message))
+      })
+  }
+
+  getStatisticsByMonthly () {
+    return new Promise((resolve, reject) => {
+      // {
+      //   year: 2017,
+      //   count: 500,
+      //   months: [{
+      //     month: 1,
+      //     count: 200
+      //   },{
+      //     month: 2,
+      //     count: 100
+      //   },{
+      //     month: 2,
+      //     count: 200
+      //   }]
+      // }
+      const sql = `SELECT CONVERT(DATE_FORMAT(last_update_time, '%Y'), SIGNED) AS year, CONVERT(DATE_FORMAT(last_update_time, '%m'), SIGNED) AS month, COUNT(id) AS count FROM article_meta GROUP BY year, month ORDER BY year DESC, month DESC`
+      super.exec(sql)
+      .then(res => {
+        let ret = []
+        // res = [{year: '2014', month: '10', count: 1 }, { year: '2014', month: '12', count: 1}, ...]
+        // ret = [{year: '2014', months:[{month:'10', count: 1},{month:'12', count:1}]}, ...]
+        if(res && Array.isArray(res)){
+          res.map(row => {
+            const {year, month, count} = row
+            const yearIndex = _.findIndex(ret, y => y.year === year)
+            const hasYear = yearIndex > -1
+            const monthData = {month, count}
+            if(hasYear){
+              const months = ret[yearIndex].months
+              if(months && months.length) {
+                ret[yearIndex].months.push(monthData)
+              }else{
+                ret[yearIndex].months = [monthData]
+              }
+              ret[yearIndex].count += count
+            }else{
+              ret.push({year, count , months:[monthData]})
+            }
+          })
+        }
+        resolve(ret)
+      })
+      .catch(({message}) => reject(message))
+    })
+  }
 
   create (param) {
     return new Promise((resolve, reject) => {
       super.create(param).then(result => {
         resolve({id: result.insertId})
       })
-      .catch(err => reject(err.message))
+      .catch(({message}) => reject(message))
     })
   }
 
@@ -44,15 +144,15 @@ class ArticleMetaTable extends Table {
                  total: countRes[0].count,
                  articles: result
                })
-             }).catch(err => reject(err.message))
-          }).catch(err => reject(err.message))
+             }).catch(({message}) => reject(message))
+          }).catch(({message}) => reject(message))
       }else{
         super.getAll(orderBy, limit)
         .then(result => {
           resolve({
             articles: result
           })
-        }).catch(err => reject(err.message))
+        }).catch(({message}) => reject(message))
       }
     })
   }
@@ -60,43 +160,7 @@ class ArticleMetaTable extends Table {
   getById (id) {
     return super.getById(id)
   }
-  /**
-   * title[String] 要查询的title
-   * orderBy[String] 排序字符串，如：order by last_update_time
-   * pagination[Object] 分页参数，如：{offset:0, limit: 50}
-   * isLike[Boolean] 是否是分页查询
-   */
-  getByTitle (title, orderBy, pagination, isLike) {
-    let where = ` where title = '${title}' `
-    if(isLike){
-      where = ` where title like '%${title}%' `
-    }
-    orderBy = orderBy || this._getOrderBy(orderBy)
-    let limit = this._getPagination(pagination)
-    let sql =  `SELECT ${this.columnsStr} from ${this.table} ${where} ${orderBy} ${limit} `
-    return new Promise((resolve, reject) => {
-      if(limit){
-        super.total().then(countRes => {
-             super.exec(sql).then(result => {
-               resolve({
-                 total: countRes[0].count,
-                 articles: result
-               })
-             })
-             .catch(err => reject(err.message))
-          })
-          .catch(err => reject(err.message))
-      }else{
-        super.exec(sql).then(result => {
-          resolve({
-            articles: result
-          })
-        })
-        .catch(err => reject(err.message))
-      }
-    })
 
-  }
 
   getByCtype (ctype, orderBy, pagination){
     let where = ` where ctype = '${ctype}' `
@@ -112,16 +176,16 @@ class ArticleMetaTable extends Table {
                  articles: result
                })
              })
-             .catch(err => reject(err.message))
+             .catch(({message}) => reject(message))
           })
-          .catch(err => reject(err.message))
+          .catch(({message}) => reject(message))
       }else{
         super.exec(sql).then(result => {
           resolve({
             articles: result
           })
         })
-        .catch(err => reject(err.message))
+        .catch(({message}) => reject(message))
       }
     })
   }
@@ -143,16 +207,16 @@ class ArticleMetaTable extends Table {
                  articles: result
                })
              })
-             .catch(err => reject(err.message))
+             .catch(({message}) => reject(message))
           })
-          .catch(err => reject(err.message))
+          .catch(({message}) => reject(message))
       }else{
         super.exec(sql).then(result => {
           resolve({
             articles: result
           })
         })
-        .catch(err => reject(err.message))
+        .catch(({message}) => reject(message))
       }
     })
   }
@@ -174,16 +238,16 @@ class ArticleMetaTable extends Table {
                  articles: result
                })
              })
-             .catch(err => reject(err.message))
+             .catch(({message}) => reject(message))
           })
-          .catch(err => reject(err.message))
+          .catch(({message}) => reject(message))
       }else{
         super.exec(sql).then(result => {
           resolve({
             articles: result
           })
         })
-        .catch(err => reject(err.message))
+        .catch(({message}) => reject(message))
       }
     })
   }
@@ -207,16 +271,16 @@ class ArticleMetaTable extends Table {
                  articles: result
                })
              })
-             .catch(err => reject(err.message))
+             .catch(({message}) => reject(message))
           })
-          .catch(err => reject(err.message))
+          .catch(({message}) => reject(message))
       }else{
         super.exec(sql).then(result => {
           resolve({
             articles: result
           })
         })
-        .catch(err => reject(err.message))
+        .catch(({message}) => reject(message))
       }
     })
   }
