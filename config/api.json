@@ -1,5 +1,6 @@
 {
   "articles" : "articles",
   "users": "users",
-  "images": "images"
+  "images": "images",
+  "tags": "tags"
 }

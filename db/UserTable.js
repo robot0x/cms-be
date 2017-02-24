@@ -2,7 +2,7 @@ const Table = require('./Table')
 const log4js = require('log4js')
 const logger = log4js.getLogger()
 
-class UserTable extends Table{
+class UserTable extends Table {
   constructor(){
     super('user', [
       'id', // int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '作者自增id',
@@ -26,6 +26,10 @@ class UserTable extends Table{
       })
       .catch(err => reject(err.message))
     })
+  }
+
+  getUserAndCount () {
+    return super.exec(`SELECT user AS name, COUNT(a.id) AS count FROM article_meta AS a, ${this.table} AS u WHERE a.user = u.name GROUP BY u.name`)
   }
 
   exec(sql, data){

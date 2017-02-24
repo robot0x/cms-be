@@ -1,6 +1,7 @@
 const ArticlesService = require('./ArticlesService')
 const UsersService = require('./UsersService')
 const ImagesService = require('./ImagesService')
+const TagsService = require('./TagsService')
 /**
  * 业务类工厂
  *  在server.js中调用
@@ -23,6 +24,9 @@ class ServiceFactory {
         break;
       case 'images':
         serviceInstance = new ImagesService()
+        break;
+      case 'tags':
+        serviceInstance = new TagsService()
         break;
     }
     return serviceInstance

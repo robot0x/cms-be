@@ -1,3 +1,4 @@
+const _ = require('lodash')
 const Promise = require('bluebird')
 const UserTable = require('../db/UserTable')
 const authorTable = new UserTable()
@@ -13,14 +14,19 @@ class UsersService {
 
   list (param) {
     return new Promise((resolve, reject) => {
-      logger.info('UsersService 14:', param)
       const {offset, limit, id, user, password} = param
-      logger.info('UsersService 16:', user)
-      logger.info('UsersService 17:', password)
       let promise = null
+
+      logger.info('UsersService 20:', param)
+
+      if(!param || _.isEmpty(param)){
+        promise = userTable.getUserAndCount()
+      }
+
       if(user && password){
         promise = userTable.auth(user, password)
       }
+
       return promise
               .then(result => {
                 resolve(result)
