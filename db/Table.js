@@ -11,9 +11,16 @@ const logger = log4js.getLogger()
  */
 class Table {
 
-  constructor(table, columns, orderByCol){
+  constructor(table, columns, format, orderByCol){
     this.table = table
     this.columns = columns
+    if(format){
+      const {columns, pattern} = format
+      const formatColumns = columns.map(col => {
+        return `DATE_FORMAT(${col},'${pattern}') AS ${col}`
+      })
+      this.columns = this.columns.concat(formatColumns)
+    }
     this.columnsStr = this.columns.join(',')
     this.orderByCol = orderByCol
     this.db = db

@@ -14,14 +14,19 @@ class ArticleMetaTable extends Table {
       'wx_title', // text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '文章title',
       'wb_title', // text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '文章title',
       'ctype', // tinyint(2) unsigned NOT NULL COMMENT '文章类型',
-      'create_time', // timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '文章创建时间',
-      'last_update_time', // timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '文章最后更新时间',
+
       'user', // varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户名',
       'author', // varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '文章作者id',
       'lock_by', // varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '被那个作者锁定',
-      'last_update_by', // varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '被那个作者锁定',
-      // 'data' // text COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '冗余字段',
+      'last_update_by' // varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '被那个作者锁定',
     ],
+    {
+      columns: [
+        'create_time', // timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '文章创建时间',
+        'last_update_time', // timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '文章最后更新时间',]
+      ],
+      pattern: '%Y-%m-%d %T'
+    },
     'last_update_time'
     )
   }
