@@ -72,6 +72,11 @@ class Table {
     return this.exec(`SELECT ${this.columnsStr} FROM ${this.table} where id = ${id}`)
   }
 
+  // getByCond ({key, value}) {
+  //   return this.exec(`SELECT ${this.columnsStr} FROM ${this.table} where ${key} = '${value}'`)
+  // }
+
+
   getAll(orderBy, pagination){
     orderBy = ` order by ${this.orderByCol} desc `
     let limitStr = ''

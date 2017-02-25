@@ -78,11 +78,11 @@ function requestHandler (req, res, next) {
     response.status = 400
     response.message = `Invalid param：${paramCheck.message}`
     // 参数不符合要求
-    return res.json(ret)
+    return res.json(response)
   }
 
-  logger.info('server.js 84:', body)
-  logger.info('server.js 85:', action)
+  // logger.info('server.js 84:', body)
+  // logger.info('server.js 85:', action)
   /**
    * 调用栈：
    *  ServiceFactory -> ArticlesService.js -> ArticleContentTable.js -> DB.js
@@ -217,7 +217,7 @@ function bodyParse (req, res, next) {
 
 function allowCors (req, res, next) {
   res.header('Access-Control-Allow-Origin', '*')
-  res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
   res.header('Access-Control-Allow-Headers', 'Content-Type,Content-Length,Authorization,X-Request-With')
 
   if (req.method === 'OPTIONS') {

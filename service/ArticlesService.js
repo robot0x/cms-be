@@ -12,6 +12,26 @@ class ArticlesService {
   constructor(){
     logger.log('ArticlesService 实例化了....')
   }
+
+  /**
+   * 更新一篇文章
+   */
+  update (param) {
+    return new Promise((resolve, reject) => {
+      const { type } = param
+      let promise = null
+      if(type === 'all'){
+        promise = articleMetaTable.updateAll(param)
+      } else {
+        promise = articleMetaTable.update(param)
+      }
+      return promise
+              .then(result => {
+                resolve(result)
+              }).catch(err => reject(err))
+    })
+  }
+
   /**
    * 新增一片文章
    */
@@ -66,6 +86,7 @@ class ArticlesService {
 
       if(type){
         if(type === 'all'){
+          logger.info('ArticlesService exec ... all')
           promise = articleMetaTable.all(id)
           isAll = true
         } else if(type === 'monthly') {
@@ -77,19 +98,11 @@ class ArticlesService {
         promise = articleMetaTable.getAll(null, limitObj)
       }
 
-      if( isAll ) {
-        return promise
-                .then(result => {
-                  resolve(result)
-                })
-                .catch(err => reject(err))
-      } else {
-        return promise
-                .then(result => {
-                  resolve(result)
-                })
-                .catch(err => reject(err))
-      }
+      return promise
+              .then(result => {
+                logger.info('ArticlesService 103', result)
+                resolve(result)
+              }).catch(err => reject(err))
     })
   }
 

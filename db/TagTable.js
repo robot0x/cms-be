@@ -29,7 +29,7 @@ class TagTable extends Table{
     return new Promise((resolve, reject) => {
       super.exec(`SELECT tid,name,parent,level FROM ${this.table}`)
       .then(result => {
-        logger.info('TagTable 21', result)
+        // logger.info('TagTable 21', result)
         // resolve(result)
         const ret = []
         const res = [...result]
