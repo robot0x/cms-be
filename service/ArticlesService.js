@@ -88,11 +88,14 @@ class ArticlesService {
       if(type){
         if(type === 'all'){
           logger.info('ArticlesService exec ... all')
-          promise = articleMetaTable.all(id)
+          promise = articleMetaTable.all(id, user)
           isAll = true
         } else if(type === 'monthly') {
             promise = articleMetaTable.getStatisticsByMonthly()
         }
+        // else if(type === 'check'){
+        //     promise = articleMetaTable.check(id, user)
+        // }
       }
       // /articles/?offset=0&limit=2  METHOD:GET
       if(!promise){

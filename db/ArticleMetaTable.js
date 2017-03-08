@@ -34,12 +34,28 @@ class ArticleMetaTable extends Table {
     'last_update_time'
     )
   }
-
-  all (id) {
+  // check (id, user){
+  //   return new Promise((resolve, reject) => {
+  //     this
+  //     .exec(`UPDATE ${this.table} set lock_by='${user}' where id=${id}`)
+  //     .then(result => {
+  //       logger.info('articleMetaTable 42', result)
+  //       const {affectedRows} = result
+  //       let ret = { valid: true }
+  //       if(!affectedRows){
+  //         ret.valid = false
+  //       }
+  //       resolve(ret)
+  //     })
+  //     .catch(({message}) => reject(message))
+  //   })
+  // }
+  all (id, user) {
     // logger.info('articleMetaTable all exec id is ', id)
     return new Promise((resolve, reject) => {
       try {
         const batch = []
+        logger.info('articleMetaTable 58', user)
         batch.push(this.exec(`
           SELECT
             a.*,
@@ -67,14 +83,21 @@ class ArticleMetaTable extends Table {
           `
         ))
         batch.push(imageTable.exec(`SELECT ${imageTable.columnsStr} FROM ${imageTable.table} WHERE aid=${id}`))
+        // 只有当lock_by 没有值时，才可以被UPDATE
+        batch.push(this.exec(`UPDATE ${this.table} set lock_by='${user}' where id=${id} and lock_by=''`))
         Promise.all(batch)
         .then(res => {
-          // logger.info('articleMetaTable 72:', res)
+          logger.info('articleMetaTable 89:', res)
           // logger.info('articleMetaTable 73:', res.length)
           let ret = res[0][0]
-          ret.images = res[1]
-          // logger.info('articleMetaTable 76:', ret)
-          resolve(ret)
+          if(ret){
+            ret.images = res[1]
+            // logger.info('articleMetaTable 76:', ret)
+            resolve(ret)
+          }else{
+            logger.info('articleMetaTable 96:', 'ret不存在。。。。。。。')
+            resolve({})
+          }
         })
         .catch(err => {
           // logger.info('articleMetaTable 80:', err)
