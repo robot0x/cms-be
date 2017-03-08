@@ -97,7 +97,8 @@ class ArticleMetaTable extends Table {
           // logger.info('articleMetaTable 40:', param)
           const {id, meta, images, content, gift, keywords, tags} = param
           const batch = []
-          batch.push(this.exec(`UPDATE ${this.table} SET ?`, meta))
+          logger.info('articleMetaTable 100', meta)
+          batch.push(this.exec(`UPDATE ${this.table} SET ? WHERE id=${id}`, meta))
           batch.push(this.exec(
             `
             INSERT INTO
@@ -336,7 +337,15 @@ class ArticleMetaTable extends Table {
   }
 
   getById (id) {
-    return super.getById(id)
+    return new Promise((resolve, reject) => {
+      super.getById(id).then(result => {
+        resolve({
+          articles: result,
+          total: result.length
+        })
+      })
+      .catch(({message}) => reject(message))
+    })
   }
 
 

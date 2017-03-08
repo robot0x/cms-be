@@ -84,6 +84,7 @@ class Table {
       limitStr = ` limit ${pagination.offset || 0}, ${pagination.limit} `
     }
     const sql = `select ${this.columnsStr} from ${this.table} ${orderBy} ${limitStr}`
+    logger.info('table 87', sql)
     return this.exec(sql)
   }
 

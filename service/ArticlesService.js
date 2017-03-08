@@ -15,11 +15,13 @@ class ArticlesService {
 
   /**
    * 更新一篇文章
+   * /articles METHOD:PUT
    */
   update (param) {
     return new Promise((resolve, reject) => {
       const { type } = param
       let promise = null
+      logger.info('ArticlesService 24', type)
       if(type === 'all'){
         promise = articleMetaTable.updateAll(param)
       } else {
@@ -92,7 +94,7 @@ class ArticlesService {
             promise = articleMetaTable.getStatisticsByMonthly()
         }
       }
-
+      // /articles/?offset=0&limit=2  METHOD:GET
       if(!promise){
         promise = articleMetaTable.getAll(null, limitObj)
       }
