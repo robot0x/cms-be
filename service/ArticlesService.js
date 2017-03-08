@@ -40,7 +40,6 @@ class ArticlesService {
   }
 
   list (param) {
-
     return new Promise((resolve, reject) => {
       logger.info('ArticlesService 20:', param)
       const {offset, limit, id, title, ctype, user, time, type, author, month} = param

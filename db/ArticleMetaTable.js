@@ -36,7 +36,7 @@ class ArticleMetaTable extends Table {
   }
 
   all (id) {
-    logger.info('articleMetaTable all exec id is ', id)
+    // logger.info('articleMetaTable all exec id is ', id)
     return new Promise((resolve, reject) => {
       try {
         const batch = []
@@ -69,15 +69,15 @@ class ArticleMetaTable extends Table {
         batch.push(imageTable.exec(`SELECT ${imageTable.columnsStr} FROM ${imageTable.table} WHERE aid=${id}`))
         Promise.all(batch)
         .then(res => {
-          logger.info('articleMetaTable 47:', res)
-          logger.info('articleMetaTable 48:', res.length)
+          // logger.info('articleMetaTable 72:', res)
+          // logger.info('articleMetaTable 73:', res.length)
           let ret = res[0][0]
           ret.images = res[1]
-          logger.info('articleMetaTable 51:', ret)
+          // logger.info('articleMetaTable 76:', ret)
           resolve(ret)
         })
         .catch(err => {
-          logger.info('articleMetaTable 51:', err)
+          // logger.info('articleMetaTable 80:', err)
           reject(err.message)
         })
       } catch (e) {
@@ -94,7 +94,7 @@ class ArticleMetaTable extends Table {
       return new Promise((resolve, reject) => {
         try {
           // TODO: 数据保存逻辑
-          logger.info('articleMetaTable 40:', param)
+          // logger.info('articleMetaTable 40:', param)
           const {id, meta, images, content, gift, keywords, tags} = param
           const batch = []
           batch.push(this.exec(`UPDATE ${this.table} SET ?`, meta))
@@ -109,21 +109,41 @@ class ArticleMetaTable extends Table {
               content = '${content}'
             `
           ))
+
           if(this._isValidArray(images)){
             // tid url type origin_filename extension_name size width height
-            const bulks = []
-            let cols = Object.keys(images[0])
-            logger.info('articleMetaTable 58:', cols);
-            for(const image of images){
-              bulks.push(_.values(image))
-            }
-            // TODO:这块儿需要修改，由于是异步的，
-            // 不能执行先删后插的操作，删除可能在插入之后执行
-            // 不要信任异步操作的顺序
-            batch.push(this.exec(`DELETE FROM ${imageTable.table} where aid=${id}`))
-            logger.info('articleMetaTable 124', cols) 
-            batch.push(this.exec(`INSERT INTO ${imageTable.table} (${cols}) VALUES ?`, [bulks]))
+
+
+            // const bulks = []
+            // let cols = Object.keys(images[0])
+            // logger.info('articleMetaTable 58:', cols);
+            // for(const image of images){
+            //   bulks.push(_.values(image))
+            // }
+            // // TODO:这块儿需要修改，由于是异步的，
+            // // 不能执行先删后插的操作，删除可能在插入之后执行
+            // // 不要信任异步操作的顺序
+            // batch.push(this.exec(`DELETE FROM ${imageTable.table} where aid=${id}`))
+            // logger.info('articleMetaTable 124', cols)
+            // batch.push(this.exec(`INSERT INTO ${imageTable.table} (${cols}) VALUES ?`, [bulks]))
+
+
             // batch.push(this.exec(`INSERT INTO ${imageTable.table} (aid,url,type,used,origin_filename,extension_name,size,width,height) VALUES ?`, [bulks]))
+            // 需要根据上传的image是否有id来确定是update或insert
+            logger.info('articleMetaTable 133', images)
+            for(const image of images) {
+              // 如果图片没有任何修改，就无需执行任何sql
+              // if(!image.isModify) continue;
+              delete image.isModify
+              const {id} = image
+              let imageSQL = `UPDATE ${imageTable.table} SET used=${image.used}, type='${image.type}' WHERE id=${id}`
+              if(!id){
+                delete image.id
+                imageSQL = `INSERT ${imageTable.table} SET ?`
+              }
+              logger.info('articleMetaTable 143:', imageSQL)
+              batch.push(this.exec(imageSQL, image))
+            }
           }
 
           // 插入关键词表 DONE
@@ -157,11 +177,11 @@ class ArticleMetaTable extends Table {
 
           Promise.all(batch)
           .then(res => {
-            logger.info('articleMetaTable 47:', res)
+            // logger.info('articleMetaTable 47:', res)
             resolve()
           })
           .catch(err => {
-            logger.info('articleMetaTable 51:', err)
+            // logger.info('articleMetaTable 51:', err)
             reject(err.message)
           })
         } catch (e) {

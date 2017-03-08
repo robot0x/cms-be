@@ -35,7 +35,7 @@ class Table {
       param.title = title
     }
     logger.info('table 30:', param)
-    return this.exec(`  INSERT INTO article_meta SET ?`, param)
+    return this.exec(`INSERT INTO article_meta SET ?`, param)
   }
 
   exec(sql, data){
