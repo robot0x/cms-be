@@ -34,22 +34,16 @@ class ArticleMetaTable extends Table {
     'last_update_time'
     )
   }
-  // check (id, user){
-  //   return new Promise((resolve, reject) => {
-  //     this
-  //     .exec(`UPDATE ${this.table} set lock_by='${user}' where id=${id}`)
-  //     .then(result => {
-  //       logger.info('articleMetaTable 42', result)
-  //       const {affectedRows} = result
-  //       let ret = { valid: true }
-  //       if(!affectedRows){
-  //         ret.valid = false
-  //       }
-  //       resolve(ret)
-  //     })
-  //     .catch(({message}) => reject(message))
-  //   })
-  // }
+  release (id, user){
+    return new Promise((resolve, reject) => {
+      this
+      .exec(`UPDATE ${this.table} set lock_by='' where id=${id} and lock_by='${user}'`)
+      .then(result => {
+        resolve()
+      })
+      .catch(({message}) => reject(message))
+    })
+  }
   all (id, user) {
     // logger.info('articleMetaTable all exec id is ', id)
     return new Promise((resolve, reject) => {

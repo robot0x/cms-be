@@ -92,10 +92,9 @@ class ArticlesService {
           isAll = true
         } else if(type === 'monthly') {
             promise = articleMetaTable.getStatisticsByMonthly()
+        } else if(type === 'release'){
+            promise = articleMetaTable.release(id, user)
         }
-        // else if(type === 'check'){
-        //     promise = articleMetaTable.check(id, user)
-        // }
       }
       // /articles/?offset=0&limit=2  METHOD:GET
       if(!promise){
