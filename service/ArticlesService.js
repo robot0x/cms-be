@@ -58,7 +58,7 @@ class ArticlesService {
       }
 
       if(param.id && _.toInteger(id)){
-        promise = articleMetaTable.getById(id)
+          promise = articleMetaTable.getById(id)
       }
 
       if(title){
@@ -94,6 +94,8 @@ class ArticlesService {
             promise = articleMetaTable.getStatisticsByMonthly()
         } else if(type === 'release'){
             promise = articleMetaTable.release(id, user)
+        } else if (type === 'lock'){
+            promise = articleMetaTable.lock(id, user)
         }
       }
       // /articles/?offset=0&limit=2  METHOD:GET

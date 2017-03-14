@@ -34,6 +34,35 @@ class ArticleMetaTable extends Table {
     'last_update_time'
     )
   }
+
+  lock (id, user){
+    return new Promise((resolve, reject) => {
+      this
+      .exec(`SELECT lock_by FROM ${this.table} WHERE id=${id}`)
+      .then(result => {
+        logger.info('articleMetaTable lock 43', result)
+        if(this._isValidArray(result)){
+          const lock_by = result[0].lock_by
+          if(lock_by){
+            resolve({lock_by})
+          }else{
+            this
+            .exec(`UPDATE ${this.table} set lock_by='${user}' where id=${id}`)
+            .then(result => {
+              resolve()
+            })
+            .catch(({message}) => reject(message))
+          }
+        }else{
+          reject()
+        }
+
+      })
+      .catch(({message}) => reject(message))
+
+    })
+  }
+
   release (id, user){
     return new Promise((resolve, reject) => {
       this
