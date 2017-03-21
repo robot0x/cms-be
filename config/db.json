@@ -1,5 +1,5 @@
 {
-    "host":"172.16.1.144",
+    "host":"172.16.1.121",
     "user":"root",
     "password":"sqltest",
     "database":"cms",
