@@ -73,6 +73,7 @@ class ArticleMetaTable extends Table {
       .catch(({message}) => reject(message))
     })
   }
+
   all (id, user) {
     // logger.info('articleMetaTable all exec id is ', id)
     return new Promise((resolve, reject) => {
@@ -182,6 +183,7 @@ class ArticleMetaTable extends Table {
               // 如果图片没有任何修改，就无需执行任何sql
               // if(!image.isModify) continue;
               delete image.isModify
+              logger.info('articleMetaTable updateAll 186:', image)
               const {id} = image
               let imageSQL = `UPDATE ${imageTable.table} SET used=${image.used}, type='${image.type}' WHERE id=${id}`
               if(!id){
