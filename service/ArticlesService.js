@@ -23,7 +23,7 @@ class ArticlesService {
       let promise = null
       logger.info('ArticlesService 24', type)
       if(type === 'all'){
-        promise = articleMetaTable.updateAll(param)
+        promise = articleMewtaTable.updateAll(param)
       } else {
         promise = articleMetaTable.update(param)
       }

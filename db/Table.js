@@ -16,10 +16,7 @@ class Table {
     this.columns = columns
     if(format){
       const {columns, pattern} = format
-      const formatColumns = columns.map(col => {
-        return `DATE_FORMAT(${col},'${pattern}') AS ${col}`
-      })
-      this.columns = this.columns.concat(formatColumns)
+      this.columns = this.columns.concat(columns.map(col => `DATE_FORMAT(${col},'${pattern}') AS ${col}`))
     }
     this.columnsStr = this.columns.join(',')
     this.orderByCol = orderByCol
