@@ -113,7 +113,7 @@ class ArticleMetaTable extends Table {
         .then(res => {
           logger.info('articleMetaTable 89:', res)
           // logger.info('articleMetaTable 73:', res.length)
-          let ret = res[0][0]
+          let [[ret]] = res
           if(ret){
             ret.images = res[1]
             // logger.info('articleMetaTable 76:', ret)
