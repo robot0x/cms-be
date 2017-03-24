@@ -38,7 +38,7 @@ app.use(function (err, req, res, next) {
   return res.json({
     status: 500,
     server_timestamp: server_timestamp,
-    message: `后端报错：${err.stack}`
+    message: `后端报错：${err.message}`
   })
 })
 
