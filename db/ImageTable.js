@@ -16,16 +16,6 @@ class ImageTable extends Table{
       `create_time` // timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '图片上传时间',
     ])
   }
-  exec(sql, data){
-    return super.exec(sql, data)
-  }
-  // getByUrl (url) {
-  //     return super.getByCond(`url = ${url}`)
-  // }
-  // deleteByUrl (url) {
-  //     return super.deleteByCond(`url = ${url}`)
-  // }
-
 }
 
 module.exports = ImageTable

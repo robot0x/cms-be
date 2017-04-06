@@ -75,7 +75,10 @@ class Table {
 
 
   getAll(orderBy, pagination){
-    orderBy = ` order by ${this.orderByCol} desc `
+    orderBy = orderBy || ''
+    if(orderBy){
+      orderBy = ` order by ${this.orderByCol} desc `
+    }
     let limitStr = ''
     if(pagination && !_.isEmpty(pagination)){
       limitStr = ` limit ${pagination.offset || 0}, ${pagination.limit} `
@@ -94,84 +97,6 @@ class Table {
   deleteById (id) {
     return this.deleteByCond(`id = ${id}`)
   }
-
-  // /**
-  //  *  根据参数，调用不同的方法
-  //  */
-  // list(nid, limit){
-  //   // 门面模式
-  //   nid = _.toInteger(nid)
-  //   limit = _.toInteger(limit)
-  //   if( nid ){
-  //     return this.getByNid(nid)
-  //   }else if( limit ){
-  //     return this.getByCond(null, limit)
-  //   }else{
-  //     return this.getByCond(null, null, 'order by last_update_time desc')
-  //   }
-  // }
-  //
-  // getAll(orderBy, limit){
-  //   // return this.getByCond()
-  //   orderBy = ` order by ${this.orderByCol} `
-  //   let limitStr = ''
-  //   if(limit && !_.isEmpty){
-  //     limitStr = ` limit ${limit.offset}, ${limit.limit} `
-  //   }
-  //   const sql = `select ${this.columnsStr} from ${this.table} ${orderBy} ${limitStr}`
-  //   return this.exec(sql)
-  // }
-  //
-  // getById (id) {
-  //   return this.getByCond(`id = ${id}`)
-  // }
-  //
-  // getByNid (nid) {
-  //   return this.getByCond(`nid = ${nid}`)
-  // }
-  //
-  // getByCond ( cond = '1 = 1', limit, order ) {
-  //
-  //   let sql = `select ${this.columns.join(',')}, (select count(1) from ${this.table}) as total from ${this.table} `
-  //
-  //   if( cond ){
-  //     const escapeValue = db.escapeValue(cond)
-  //     sql += `where ${escapeValue.key} = ${escapeValue.value} `
-  //   }
-  //
-  //   if( limit ){
-  //     sql += `limit ${limit} `
-  //   }
-  //
-  //   if( order ){
-  //     sql += order
-  //   }
-  //
-  //   return this.exec(sql)
-  // }
-  //
-  // update (data) {
-  //   const id = data.id
-  //   delete data.id
-  //   const sql = `update ${this.table} set ? where nid = ${id}`
-  //   return this.exec(sql, data)
-  // }
-  //
-  // save (data) {
-  //   data.nid = data.id
-  //   delete data.id
-  //   logger.info('Table.js 73:', data)
-  //   const sql = `insert into ${this.table} (title) values ('新建文章')`
-  //   // return this.exec(`insert into ${this.table} set ?`, data)
-  //   return this.exec(sql)
-  // }
-  //
-
-  //
-  // deleteByNid (nid) {
-  //   return this.deleteByCond(`nid = ${nid}`)
-  // }
-
 }
 
 module.exports = Table

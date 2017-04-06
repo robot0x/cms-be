@@ -110,53 +110,6 @@ class ArticlesService {
               }).catch(err => reject(err))
     })
   }
-
-  // _getTableByType( type ){
-  //   let table = null
-  //   if( type && _.isString(type) && type.toLowerCase() === 'content' ) {
-  //     table = articleContentTable
-  //   } else {
-  //     table = articleMetaTable
-  //   }
-  //   return table
-  // }
-  // save(param){
-  //   logger.log('ArticlesService save...', param)
-  //   return new Promise((resolve, reject) => {
-  //     this._getTableByType(param.type)
-  //         .save(param)
-  //         .then(result => resolve(result))
-  //         .catch(err => reject(err))
-  //   })
-  // }
-  // delete(param){
-  //   return new Promise((resolve, reject) => {
-  //     this._getTableByType(param.type)
-  //         .deleteByNid(param.id)
-  //         .then(result => resolve(result))
-  //         .catch(err => reject(err))
-  //   })
-  // }
-  // update(param){
-  //   return new Promise((resolve, reject) => {
-  //     this._getTableByType(param.type)
-  //         .update(param)
-  //         .then(result => resolve(result))
-  //         .catch(err => reject(err))
-  //   })
-  // }
-  // list(param){
-  //   logger.log('ArticlesService 55:', param)
-  //   if(!param && _.isEmpty(param)){
-  //     articleMetaTable
-  //   }
-  //   return new Promise((resolve, reject) => {
-  //     this._getTableByType(param.type)
-  //         .list(param.id, param.limit)
-  //         .then(rows => resolve(rows))
-  //         .catch(err => reject(err))
-  //   })
-  // }
 }
 
 module.exports = ArticlesService

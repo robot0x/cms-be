@@ -42,7 +42,7 @@ class ArticleMetaTable extends Table {
       .then(result => {
         logger.info('articleMetaTable lock 43', result)
         if(this._isValidArray(result)){
-          const lock_by = result[0].lock_by
+          const { lock_by } = result[0]
           if(lock_by){
             resolve({lock_by})
           }else{
@@ -535,25 +535,6 @@ class ArticleMetaTable extends Table {
     }
     return limit
   }
-  // getByTitle (title) {
-  //   return super.getByCond(`title = ${title}`)
-  // }
-  // deleteByName (name) {
-  //   return super.deleteByCond(`name = ${name}`)
-  // }
-  // save(data){
-  //   // 新增时，如果没有指定 lock_by 和 last_update_by，则默认这两个字段和 author 一样
-  //   const author = data.author
-  //   const lock_by = data.lock_by
-  //   const last_update_by = data.last_update_by
-  //   if(!lock_by){
-  //     data.lock_by = author
-  //   }
-  //   if(!last_update_by){
-  //     data.last_update_by = author
-  //   }
-  //   return super.save(data)
-  // }
 }
 
 module.exports = ArticleMetaTable

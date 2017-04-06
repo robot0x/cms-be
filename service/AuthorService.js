@@ -1,17 +1,20 @@
+const _ = require('lodash')
 const Promise = require('bluebird')
-const ImageTable = require('../db/ImageTable')
-const imageTable = new ImageTable()
+const AuthorTable = require('../db/AuthorTable')
+const authorTable = new AuthorTable()
+const log4js = require('log4js')
+const logger = log4js.getLogger()
 
-class ImagesService{
+class AuthorService{
 
   constructor(){
-    console.log('ImagesService 实例化....');
+    console.log('AuthorService 实例化....');
   }
 
   save(param){
-    console.log('ImagesService save...', param)
+    console.log('AuthorService save...', param)
     return new Promise((resolve, reject) => {
-      imageTable
+      authorTable
           .save(param)
           .then(result => resolve(result))
           .catch(err => reject(err))
@@ -19,19 +22,19 @@ class ImagesService{
   }
 
   delete(param){
-    console.log('ImagesService delete...', param)
+    console.log('AuthorService delete...', param)
     return new Promise((resolve, reject) => {
-      imageTable
-          .deleteByNid(param.id)
+      authorTable
+          .deleteById(param.id)
           .then(result => resolve(result))
           .catch(err => reject(err))
     })
   }
 
   update(param){
-    console.log('ImagesService update...', param)
+    console.log('AuthorService update...', param)
     return new Promise((resolve, reject) => {
-      imageTable
+      authorTable
           .update(param)
           .then(result => resolve(result))
           .catch(err => reject(err))
@@ -39,10 +42,9 @@ class ImagesService{
   }
 
   list(param){
-    console.log('ImagesService list...', param)
+    console.log('AuthorService list...', param)
     return new Promise((resolve, reject) => {
-      this._getTableByType(param.type)
-          .list(param.id, param.limit)
+      authorTable.getAll()
           .then(rows => resolve(rows))
           .catch(err => reject(err))
     })
@@ -50,4 +52,4 @@ class ImagesService{
 
 }
 
-module.exports = ImagesService
+module.exports = AuthorService

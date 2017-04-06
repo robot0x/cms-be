@@ -17,10 +17,7 @@ class TagTable extends Table{
     const ret = []
     for(const tag of tags){
       if(tag.parent === parent){
-        ret.push({
-          tid: tag.tid,
-          name: tag.name
-        })
+        ret.push({ tid: tag.tid, name: tag.name })
       }
     }
     return ret

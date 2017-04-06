@@ -1,7 +1,8 @@
-const ArticlesService = require('./ArticlesService')
-const UsersService = require('./UsersService')
-const ImagesService = require('./ImagesService')
-const TagsService = require('./TagsService')
+const ArticleService = require('./ArticleService')
+const UserService = require('./UserService')
+const ImageService = require('./ImageService')
+const TagService = require('./TagService')
+const AuthorService = require('./AuthorService')
 /**
  * 业务类工厂
  *  在server.js中调用
@@ -17,16 +18,19 @@ class ServiceFactory {
     let serviceInstance = null
     switch (this.action) {
       case 'articles':
-        serviceInstance = new ArticlesService()
+        serviceInstance = new ArticleService()
         break;
       case 'users':
-        serviceInstance = new UsersService()
+        serviceInstance = new UserService()
         break;
       case 'images':
-        serviceInstance = new ImagesService()
+        serviceInstance = new ImageService()
         break;
       case 'tags':
-        serviceInstance = new TagsService()
+        serviceInstance = new TagService()
+        break;
+      case 'authors':
+        serviceInstance = new AuthorService()
         break;
     }
     return serviceInstance

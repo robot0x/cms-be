@@ -2,5 +2,6 @@
   "articles" : "articles",
   "users": "users",
   "images": "images",
-  "tags": "tags"
+  "tags": "tags",
+  "authors": "authors"
 }

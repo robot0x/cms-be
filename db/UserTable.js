@@ -30,16 +30,6 @@ class UserTable extends Table {
   getUserAndCount () {
     return super.exec(`SELECT user AS name, COUNT(a.id) AS count FROM article_meta AS a, ${this.table} AS u WHERE a.user = u.name GROUP BY u.name`)
   }
-
-  exec(sql, data){
-    return super.exec(sql, data)
-  }
-  // getByName (name) {
-  //   return super.getByCond(`name = ${name}`)
-  // }
-  // deleteByName (name) {
-  //   return super.deleteByCond(`name = ${name}`)
-  // }
 }
 
 module.exports = UserTable
