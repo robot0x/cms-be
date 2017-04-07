@@ -8,7 +8,7 @@ CREATE TABLE `article_meta` (
   `ctype` tinyint(1) unsigned DEFAULT 0 COMMENT '文章类型',
   `status` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT '当前文章状态: 0-新增的文章/1-已发布/2-未发布',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '文章创建时间',
-  `last_update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '文章最后更新时间',
+  `last_update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON update CURRENT_TIMESTAMP COMMENT '文章最后更新时间',
   `user` varchar(60)  DEFAULT '' COMMENT '文章被那个用户所创建',
   `lock_by` varchar(60) DEFAULT '' COMMENT '被那个用户锁定',
   `last_update_by` varchar(60) DEFAULT '' COMMENT '最后一次更新的用户',

@@ -6,26 +6,33 @@
                 "category":"console"
             },
             {
-                "category":"log_file",
-                "type": "console",
-                "filename": "./logs/cms.log",
+                "category":"cms_http",
+                "type": "file",
+                "filename": "./logs/http.log",
                 "maxLogSize": 104800,
                 "backups": 100
             },
             {
-                "category":"log_date",
-                "type": "console",
-                "filename": "./logs/",
+                "category":"cms_var",
+                "type": "dateFile",
+                "filename": "./logs/cms_var/cms_var",
                 "alwaysIncludePattern": true,
-                "pattern": "yyyyMMddhh.log"
-
+                "pattern": ".log.yyyy-MM-dd"
+            },
+            {
+                "category":"cms_run",
+                "type": "dateFile",
+                "filename": "./logs/cms_run/cms_run",
+                "alwaysIncludePattern": true,
+                "pattern": ".log.yyyy-MM-dd"
             }
         ],
     "replaceConsole": true,
     "levels":
     {
-        "log_file":"ALL",
-        "console":"ALL",
-        "log_date":"ALL"
+        "cms_var":"ALL",
+        "cms_run":"ALL",
+        "cms_http":"ALL",
+        "console":"ALL"
     }
 }

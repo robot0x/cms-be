@@ -1,6 +1,6 @@
 const Table = require('./Table')
-const log4js = require('log4js')
-const logger = log4js.getLogger()
+const Log = require('../utils/Log')
+const varLogger = Log.getLogger('cms_var')
 
 class TagTable extends Table{
   constructor(){
@@ -37,22 +37,11 @@ class TagTable extends Table{
             children: this._findByParent(res, tag.tid)
           })
         })
-
-        // for(let i = 0, l = result.length; i < l; i++){
-        //   const tag = result[i]
-        //   const newTag = {}
-        //   if(tag.level ===  1){
-        //     newTag.tid = tag.tid
-        //     newTag.name = tag.name
-        //     newTag.children = this._findByParent(result, tag.tid)
-        //   }
-        // }
-
         resolve(ret)
       })
       .catch(err => {
-        console.log(err);
-        reject(err.message)
+        reject(err)
+        runLogger.error(err)
       })
     })
   }

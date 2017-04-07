@@ -2,8 +2,9 @@ const DB = require('./DB')
 const db = new DB()
 const Promise = require('bluebird')
 const _ = require('lodash')
-const log4js = require('log4js')
-const logger = log4js.getLogger()
+const Log = require('../utils/Log')
+const runLogger = Log.getLogger('cms_run')
+const varLogger = Log.getLogger('cms_var')
 /**
  * 所有业务表要继承的基类
  * 提供了一些常用的数据库操作
@@ -31,13 +32,14 @@ class Table {
     if(!param.title){
       param.title = title
     }
-    logger.info('table 30:', param)
+    console.log('table 30:', param)
     return this.exec(`INSERT INTO article_meta SET ?`, param)
   }
 
   exec(sql, data){
     console.log(sql)
-    // logger.info('Table.js 22:', data)
+    varLogger.info(sql)
+    // console.log('Table.js 22:', data)
     const self = this
     return new Promise((resolve, reject) => {
       self.db.getConnection().then(connection => {
@@ -48,11 +50,13 @@ class Table {
           }).catch(err => {
             reject(err)
             connection.rollback()
+            runLogger.error(err)
           })
         })
         .catch(err => {
           reject(err)
           connection.rollback()
+          runLogger.error(err)
         }).finally(() => {
           // 一定要释放连接，否则可能导致连接池中无可用连接而hang住数据库
           db.releaseConnection(connection)
@@ -66,7 +70,7 @@ class Table {
   }
 
   getById (id) {
-    return this.exec(`SELECT ${this.columnsStr} FROM ${this.table} where id = ${id}`)
+    return this.exec(`SELECT ${this.columnsStr} FROM ${this.table} WHERE id = ${id}`)
   }
 
   // getByCond ({key, value}) {
@@ -77,20 +81,20 @@ class Table {
   getAll(orderBy, pagination){
     orderBy = orderBy || ''
     if(orderBy){
-      orderBy = ` order by ${this.orderByCol} desc `
+      orderBy = ` ORDER BY ${this.orderByCol} DESC `
     }
     let limitStr = ''
     if(pagination && !_.isEmpty(pagination)){
-      limitStr = ` limit ${pagination.offset || 0}, ${pagination.limit} `
+      limitStr = ` LIMIT ${pagination.offset || 0}, ${pagination.limit} `
     }
-    const sql = `select ${this.columnsStr} from ${this.table} ${orderBy} ${limitStr}`
-    logger.info('table 87', sql)
+    const sql = `SELECT ${this.columnsStr} FROM ${this.table} ${orderBy} ${limitStr}`
+    console.log('table 87', sql)
     return this.exec(sql)
   }
 
   deleteByCond (cond = '') {
     const escapeValue = db.escapeValue(cond)
-    const sql = `delete from ${this.table} where ${escapeValue.key} = ${escapeValue.value}`
+    const sql = `DELETE from ${this.table} WHERE ${escapeValue.key} = ${escapeValue.value}`
     return this.exec(sql)
   }
 

@@ -1,7 +1,8 @@
 const _ = require('lodash')
 const Table = require('./Table')
-const log4js = require('log4js')
-const logger = log4js.getLogger()
+const Log = require('../utils/Log')
+const runLogger = Log.getLogger('cms_run')
+const varLogger = Log.getLogger('cms_var')
 
 class AuthorTable extends Table {
   constructor() {
@@ -29,15 +30,24 @@ class AuthorTable extends Table {
                  total: countRes[0].count,
                  authors: result
                })
-             }).catch(({message}) => reject(message))
-          }).catch(({message}) => reject(message))
+             }).catch(err => {
+               reject(err)
+               runLogger.error(err)
+             })
+          }).catch(err => {
+            reject(err)
+            runLogger.error(err)
+          })
       }else{
         super.getAll(null, limit)
         .then(result => {
           resolve({
             authors: result
           })
-        }).catch(({message}) => reject(message))
+        }).catch(err => {
+          reject(err)
+          runLogger.error(err)
+        })
       }
     })
   }

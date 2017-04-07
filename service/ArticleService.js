@@ -4,13 +4,12 @@ const ArticleMetaTable = require('../db/ArticleMetaTable')
 const ArticleContentTable = require('../db/ArticleContentTable')
 const articleMetaTable = new ArticleMetaTable()
 const articleContentTable = new ArticleContentTable()
-const log4js = require('log4js')
-const logger = log4js.getLogger()
+const Log = require('../utils/Log')
+const runLogger = Log.getLogger('cms_run')
 
 class ArticlesService {
-
   constructor(){
-    logger.log('ArticlesService 实例化了....')
+    console.log('ArticlesService 实例化了....')
   }
 
   /**
@@ -21,7 +20,7 @@ class ArticlesService {
     return new Promise((resolve, reject) => {
       const { type } = param
       let promise = null
-      logger.info('ArticlesService 24', type)
+      console.log('ArticlesService varLogger24', type)
       if(type === 'all'){
         promise = articleMetaTable.updateAll(param)
       } else {
@@ -30,7 +29,10 @@ class ArticlesService {
       return promise
               .then(result => {
                 resolve(result)
-              }).catch(err => reject(err))
+              }).catch(err => {
+                reject(err)
+                runLogger.error(err)
+              })
     })
   }
 
@@ -43,7 +45,7 @@ class ArticlesService {
 
   list (param) {
     return new Promise((resolve, reject) => {
-      logger.info('ArticlesService 20:', param)
+      console.log('ArticlesService 20:', param)
       const {offset, limit, id, title, ctype, user, time, type, author, month} = param
       let limitObj = null
       let promise = null
@@ -87,7 +89,7 @@ class ArticlesService {
 
       if(type){
         if(type === 'all'){
-          logger.info('ArticlesService exec ... all')
+          console.log('ArticlesService exec ... all')
           promise = articleMetaTable.all(id, user)
           isAll = true
         } else if(type === 'monthly') {
@@ -105,9 +107,12 @@ class ArticlesService {
 
       return promise
               .then(result => {
-                logger.info('ArticlesService 103', result)
+                console.log('ArticlesService 103', result)
                 resolve(result)
-              }).catch(err => reject(err))
+              }).catch(err => {
+                reject(err)
+                runLogger.error(err)
+              })
     })
   }
 }

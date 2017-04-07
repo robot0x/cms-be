@@ -1,6 +1,7 @@
 const Table = require('./Table')
-const log4js = require('log4js')
-const logger = log4js.getLogger()
+const Log = require('../utils/Log')
+const runLogger = Log.getLogger('cms_run')
+const varLogger = Log.getLogger('cms_var')
 
 class UserTable extends Table {
   constructor(){
@@ -18,12 +19,15 @@ class UserTable extends Table {
     return new Promise((resolve, reject) => {
       super.exec(`SELECT COUNT(id) AS has FROM ${this.table} WHERE name='${user}' and password='${password}'`)
       .then(result => {
-        logger.info('UserTable 19', result)
+        console.log('UserTable 19', result)
         resolve({
           auth: result[0].has > 0
         })
       })
-      .catch(err => reject(err.message))
+      .catch(err => {
+        reject(err)
+        runLogger.error(err)
+      })
     })
   }
 

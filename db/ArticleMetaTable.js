@@ -6,6 +6,9 @@ const ArticleContentTable = require('./ArticleContentTable')
 const ImageTable = require('./ImageTable')
 const articleContentTable = new ArticleContentTable()
 const imageTable = new ImageTable()
+const Log = require('../utils/Log')
+const runLogger = Log.getLogger('cms_run')
+const varLogger = Log.getLogger('cms_var')
 
 class ArticleMetaTable extends Table {
 
@@ -27,7 +30,7 @@ class ArticleMetaTable extends Table {
     {
       columns: [
         'create_time', // timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '文章创建时间',
-        'last_update_time', // timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '文章最后更新时间',]
+        'last_update_time', // timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON update CURRENT_TIMESTAMP COMMENT '文章最后更新时间',]
       ],
       pattern: '%Y-%m-%d %T'
     },
@@ -40,26 +43,30 @@ class ArticleMetaTable extends Table {
       this
       .exec(`SELECT lock_by FROM ${this.table} WHERE id=${id}`)
       .then(result => {
-        logger.info('articleMetaTable lock 43', result)
+        console.log('articleMetaTable lock 43', result)
         if(this._isValidArray(result)){
           const { lock_by } = result[0]
           if(lock_by){
             resolve({lock_by})
           }else{
             this
-            .exec(`UPDATE ${this.table} set lock_by='${user}' where id=${id}`)
+            .exec(`update ${this.table} set lock_by='${user}' where id=${id}`)
             .then(result => {
               resolve()
             })
-            .catch(({message}) => reject(message))
+            .catch(err => {
+              reject(err.message)
+              runLogger(err)
+            })
           }
         }else{
           reject()
         }
-
       })
-      .catch(({message}) => reject(message))
-
+      .catch(err => {
+        reject(err.message)
+        runLogger(err)
+      })
     })
   }
 
@@ -70,16 +77,19 @@ class ArticleMetaTable extends Table {
       .then(result => {
         resolve()
       })
-      .catch(({message}) => reject(message))
+      .catch(err => {
+        reject(err.message)
+        runLogger(err)
+      })
     })
   }
 
   all (id, user) {
-    // logger.info('articleMetaTable all exec id is ', id)
+    // console.log('articleMetaTable all exec id is ', id)
     return new Promise((resolve, reject) => {
       try {
         const batch = []
-        logger.info('articleMetaTable 58', user)
+        console.log('articleMetaTable 58', user)
         batch.push(this.exec(`
           SELECT
             a.*,
@@ -111,24 +121,26 @@ class ArticleMetaTable extends Table {
         batch.push(this.exec(`UPDATE ${this.table} set lock_by='${user}' where id=${id} and lock_by=''`))
         Promise.all(batch)
         .then(res => {
-          logger.info('articleMetaTable 89:', res)
-          // logger.info('articleMetaTable 73:', res.length)
+          console.log('articleMetaTable 89:', res)
+          // console.log('articleMetaTable 73:', res.length)
           let [[ret]] = res
           if(ret){
             ret.images = res[1]
-            // logger.info('articleMetaTable 76:', ret)
+            // console.log('articleMetaTable 76:', ret)
             resolve(ret)
           }else{
-            logger.info('articleMetaTable 96:', 'ret不存在。。。。。。。')
+            console.log('articleMetaTable 96:', 'ret不存在。。。。。。。')
             resolve({})
           }
         })
         .catch(err => {
-          // logger.info('articleMetaTable 80:', err)
+          // console.log('articleMetaTable 80:', err)
           reject(err.message)
+          runLogger(err)
         })
       } catch (e) {
         reject(e.message)
+        runLogger(err)
       }
     })
   }
@@ -141,10 +153,10 @@ class ArticleMetaTable extends Table {
       return new Promise((resolve, reject) => {
         try {
           // TODO: 数据保存逻辑
-          // logger.info('articleMetaTable 40:', param)
+          // console.log('articleMetaTable 40:', param)
           const {id, meta, images, content, gift, keywords, tags} = param
           const batch = []
-          logger.info('articleMetaTable 100', meta)
+          console.log('articleMetaTable 100', meta)
           batch.push(this.exec(`UPDATE ${this.table} SET ? WHERE id=${id}`, meta))
           batch.push(this.exec(
             `
@@ -164,7 +176,7 @@ class ArticleMetaTable extends Table {
 
             // const bulks = []
             // let cols = Object.keys(images[0])
-            // logger.info('articleMetaTable 58:', cols);
+            // console.log('articleMetaTable 58:', cols);
             // for(const image of images){
             //   bulks.push(_.values(image))
             // }
@@ -172,25 +184,25 @@ class ArticleMetaTable extends Table {
             // // 不能执行先删后插的操作，删除可能在插入之后执行
             // // 不要信任异步操作的顺序
             // batch.push(this.exec(`DELETE FROM ${imageTable.table} where aid=${id}`))
-            // logger.info('articleMetaTable 124', cols)
+            // console.log('articleMetaTable 124', cols)
             // batch.push(this.exec(`INSERT INTO ${imageTable.table} (${cols}) VALUES ?`, [bulks]))
 
 
             // batch.push(this.exec(`INSERT INTO ${imageTable.table} (aid,url,type,used,origin_filename,extension_name,size,width,height) VALUES ?`, [bulks]))
-            // 需要根据上传的image是否有id来确定是update或insert
-            logger.info('articleMetaTable 133', images)
+            // 需要根据上传的image是否有id来确定是UPDATE或INSERT
+            console.log('articleMetaTable 133', images)
             for(const image of images) {
               // 如果图片没有任何修改，就无需执行任何sql
               // if(!image.isModify) continue;
               delete image.isModify
-              logger.info('articleMetaTable updateAll 186:', image)
+              console.log('articleMetaTable updateAll 186:', image)
               const {id} = image
               let imageSQL = `UPDATE ${imageTable.table} SET used=${image.used}, type='${image.type}' WHERE id=${id}`
               if(!id){
                 delete image.id
                 imageSQL = `INSERT ${imageTable.table} SET ?`
               }
-              logger.info('articleMetaTable 143:', imageSQL)
+              console.log('articleMetaTable 143:', imageSQL)
               batch.push(this.exec(imageSQL, image))
             }
           }
@@ -226,15 +238,17 @@ class ArticleMetaTable extends Table {
 
           Promise.all(batch)
           .then(res => {
-            // logger.info('articleMetaTable 47:', res)
+            // console.log('articleMetaTable 47:', res)
             resolve()
           })
           .catch(err => {
-            // logger.info('articleMetaTable 51:', err)
+            // console.log('articleMetaTable 51:', err)
             reject(err.message)
+            runLogger(err)
           })
         } catch (e) {
             reject(e.message)
+            runLogger(e)
         }
 
       })
@@ -263,16 +277,25 @@ class ArticleMetaTable extends Table {
                  articles: result
                })
              })
-             .catch(({message}) => reject(message))
+             .catch(err => {
+               reject(err.message)
+               runLogger(err)
+             })
           })
-          .catch(({message}) => reject(message))
+          .catch(err => {
+            reject(err.message)
+            runLogger(err)
+          })
       }else{
         super.exec(sql).then(result => {
           resolve({
             articles: result
           })
         })
-        .catch(({message}) => reject(message))
+        .catch(err => {
+          reject(err.message)
+          runLogger(err)
+        })
       }
     })
   }
@@ -289,8 +312,14 @@ class ArticleMetaTable extends Table {
                  total: countRes[0].count,
                  articles: result
                })
-             }).catch(({message}) => reject(message))
-          }).catch(({message}) => reject(message))
+             }).catch(err => {
+               reject(err.message)
+               runLogger(err)
+             })
+          }).catch(err => {
+            reject(err.message)
+            runLogger(err)
+          })
       })
   }
 
@@ -349,16 +378,22 @@ class ArticleMetaTable extends Table {
         }
         resolve(ret)
       })
-      .catch(({message}) => reject(message))
+      .catch(err => {
+        reject(err.message)
+        runLogger(err)
+      })
     })
   }
 
   create (param) {
     return new Promise((resolve, reject) => {
       super.create(param).then(result => {
-        resolve({id: result.insertId})
+        resolve({id: result.INSERTId})
       })
-      .catch(({message}) => reject(message))
+      .catch(err => {
+        reject(err.message)
+        runLogger(err)
+      })
     })
   }
 
@@ -371,15 +406,24 @@ class ArticleMetaTable extends Table {
                  total: countRes[0].count,
                  articles: result
                })
-             }).catch(({message}) => reject(message))
-          }).catch(({message}) => reject(message))
+             }).catch(err => {
+               reject(err.message)
+               runLogger(err)
+             })
+          }).catch(err => {
+            reject(err.message)
+            runLogger(err)
+          })
       }else{
         super.getAll(orderBy, limit)
         .then(result => {
           resolve({
             articles: result
           })
-        }).catch(({message}) => reject(message))
+        }).catch(err => {
+          reject(err.message)
+          runLogger(err)
+        })
       }
     })
   }
@@ -392,7 +436,10 @@ class ArticleMetaTable extends Table {
           total: result.length
         })
       })
-      .catch(({message}) => reject(message))
+      .catch(err => {
+        reject(err.message)
+        runLogger(err)
+      })
     })
   }
 
@@ -411,16 +458,25 @@ class ArticleMetaTable extends Table {
                  articles: result
                })
              })
-             .catch(({message}) => reject(message))
+             .catch(err => {
+               reject(err.message)
+               runLogger(err)
+             })
           })
-          .catch(({message}) => reject(message))
+          .catch(err => {
+            reject(err.message)
+            runLogger(err)
+          })
       }else{
         super.exec(sql).then(result => {
           resolve({
             articles: result
           })
         })
-        .catch(({message}) => reject(message))
+        .catch(err => {
+          reject(err.message)
+          runLogger(err)
+        })
       }
     })
   }
@@ -442,16 +498,25 @@ class ArticleMetaTable extends Table {
                  articles: result
                })
              })
-             .catch(({message}) => reject(message))
+             .catch(err => {
+               reject(err.message)
+               runLogger(err)
+             })
           })
-          .catch(({message}) => reject(message))
+          .catch(err => {
+            reject(err.message)
+            runLogger(err)
+          })
       }else{
         super.exec(sql).then(result => {
           resolve({
             articles: result
           })
         })
-        .catch(({message}) => reject(message))
+        .catch(err => {
+          reject(err.message)
+          runLogger(err)
+        })
       }
     })
   }
@@ -473,16 +538,25 @@ class ArticleMetaTable extends Table {
                  articles: result
                })
              })
-             .catch(({message}) => reject(message))
+             .catch(err => {
+               reject(err.message)
+               runLogger(err)
+             })
           })
-          .catch(({message}) => reject(message))
+          .catch(err => {
+            reject(err.message)
+            runLogger(err)
+          })
       }else{
         super.exec(sql).then(result => {
           resolve({
             articles: result
           })
         })
-        .catch(({message}) => reject(message))
+        .catch(err => {
+          reject(err.message)
+          runLogger(err)
+        })
       }
     })
   }
@@ -506,16 +580,25 @@ class ArticleMetaTable extends Table {
                  articles: result
                })
              })
-             .catch(({message}) => reject(message))
+             .catch(err => {
+               reject(err.message)
+               runLogger(err)
+             })
           })
-          .catch(({message}) => reject(message))
+          .catch(err => {
+            reject(err.message)
+            runLogger(err)
+          })
       }else{
         super.exec(sql).then(result => {
           resolve({
             articles: result
           })
         })
-        .catch(({message}) => reject(message))
+        .catch(err => {
+          reject(err.message)
+          runLogger(err)
+        })
       }
     })
   }

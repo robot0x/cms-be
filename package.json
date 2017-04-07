@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "author": "liyanfeng",
   "description": "有调CMS系统后端",
-  "main": "server.js",
+  "main": "cms.js",
   "config": {
     "root": "",
     "root2": "cms/api/v1/",
@@ -11,8 +11,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node cms.js",
+    "dev": "nodemon cms.js"
   },
   "keywords": [
     "有调",
@@ -28,6 +28,7 @@
     "lodash": "^4.17.2",
     "log4js": "^1.1.0",
     "moment": "^2.17.1",
+    "nodemon": "^1.11.0",
     "promise-mysql": "^3.0.0"
   },
   "devDependencies": {
