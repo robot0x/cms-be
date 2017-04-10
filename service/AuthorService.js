@@ -2,13 +2,14 @@ const _ = require('lodash')
 const Promise = require('bluebird')
 const AuthorTable = require('../db/AuthorTable')
 const authorTable = new AuthorTable()
-const log4js = require('log4js')
-const logger = log4js.getLogger()
+const Log = require('../utils/Log')
+const runLogger = Log.getLogger('cms_run')
+const varLogger = Log.getLogger('cms_var')
 
 class AuthorService{
 
   constructor(){
-    console.log('AuthorService 实例化....');
+    console.log('AuthorService 实例化....')
   }
 
   save(param){
@@ -17,7 +18,10 @@ class AuthorService{
       authorTable
           .save(param)
           .then(result => resolve(result))
-          .catch(err => reject(err))
+          .catch(err => {
+            reject(err)
+            runLogger.error(err)
+          })
     })
   }
 
@@ -27,7 +31,10 @@ class AuthorService{
       authorTable
           .deleteById(param.id)
           .then(result => resolve(result))
-          .catch(err => reject(err))
+          .catch(err => {
+            reject(err)
+            runLogger.error(err)
+          })
     })
   }
 
@@ -37,16 +44,22 @@ class AuthorService{
       authorTable
           .update(param)
           .then(result => resolve(result))
-          .catch(err => reject(err))
+          .catch(err => {
+            reject(err)
+            runLogger.error(err)
+          })
     })
   }
 
   list(param){
-    console.log('AuthorService list...', param)
+    console.log('AuthorService 45:', param)
     return new Promise((resolve, reject) => {
-      authorTable.getAll()
+      authorTable.getAll(null, param)
           .then(rows => resolve(rows))
-          .catch(err => reject(err))
+          .catch(err => {
+            reject(err)
+            runLogger.error(err)
+          })
     })
   }
 

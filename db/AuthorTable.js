@@ -21,8 +21,9 @@ class AuthorTable extends Table {
     )
   }
   getAll(orderBy, limit){
+    console.log('AuthorTable 24:', limit)
+    console.log('AuthorTable 25:', orderBy)
     return new Promise((resolve, reject) => {
-      logger.info(limit)
       if(limit){
         super.total().then(countRes => {
              super.getAll(null, limit).then(result => {
@@ -49,6 +50,21 @@ class AuthorTable extends Table {
           runLogger.error(err)
         })
       }
+    })
+  }
+
+  update (param) {
+    console.log('authorTable 57', param);
+    return new Promise((resolve, reject) => {
+      const {id} = param
+      delete param.id
+      return super.exec(`UPDATE ${this.table} SET ? WHERE id=${id}`, param).then(res => {
+        resolve(res)
+      })
+      .catch(err => {
+        reject(err)
+        runLogger.error(err)
+      })
     })
   }
 }

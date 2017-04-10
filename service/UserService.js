@@ -8,9 +8,9 @@ const logger = log4js.getLogger()
 
 class UsersService {
 
-  constructor () {
-    console.log('UserService 实例化....');
-  }
+  // constructor () {
+  //   console.log('UserService 实例化....');
+  // }
 
   list (param) {
     return new Promise((resolve, reject) => {

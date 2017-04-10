@@ -4,9 +4,9 @@ const imageTable = new ImageTable()
 
 class ImagesService{
 
-  constructor(){
-    console.log('ImagesService 实例化....');
-  }
+  // constructor(){
+  //   console.log('ImagesService 实例化....');
+  // }
 
   save(param){
     console.log('ImagesService save...', param)

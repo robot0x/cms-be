@@ -8,10 +8,9 @@ const Log = require('../utils/Log')
 const runLogger = Log.getLogger('cms_run')
 
 class ArticlesService {
-  constructor(){
-    console.log('ArticlesService 实例化了....')
-  }
-
+  // constructor(){
+  //   console.log('ArticlesService 实例化了....')
+  // }
   /**
    * 更新一篇文章
    * /articles METHOD:PUT
@@ -107,7 +106,7 @@ class ArticlesService {
 
       return promise
               .then(result => {
-                console.log('ArticlesService 103', result)
+                // console.log('ArticlesService 103', result)
                 resolve(result)
               }).catch(err => {
                 reject(err)

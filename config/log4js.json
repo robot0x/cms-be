@@ -10,7 +10,11 @@
                 "type": "file",
                 "filename": "./logs/http.log",
                 "maxLogSize": 104800,
-                "backups": 100
+                "backups": 100,
+                "layout": {
+                  "type": "pattern",
+                  "pattern": "[%d{DATE}] %m"
+                }
             },
             {
                 "category":"cms_var",

@@ -7,11 +7,11 @@ const config = require('./package').config
 const API = require('./config/api')
 const ServiceFactory = require('./service/ServiceFactory')
 const _ = require('lodash')
+// const cookieParser = require('cookie-parser')
 const server_timestamp = _.now()
 const Log = require('./utils/Log')
 const varLogger = Log.getLogger('cms_var')
 const runLogger = Log.getLogger('cms_run')
-
 
 /**
   200 OK - [GET]：服务器成功返回用户请求的数据，该操作是幂等的（Idempotent）。
@@ -27,9 +27,19 @@ const runLogger = Log.getLogger('cms_run')
   422 Unprocesable entity - [POST/PUT/PATCH] 当创建一个对象时，发生一个验证错误。
   500 INTERNAL SERVER ERROR - [*]：服务器发生错误，用户将无法判断发出的请求是否成功。
  */
+// app.use(cookieParser())
 // 使用log4js记录http log
 // app.use(Log.getLog4js().connectLogger(Log.getLogger('cms_http'), {format: ':remote-addr :method :url :status :response-time ms'}))
-app.use(Log.getLog4js().connectLogger(Log.getLogger('cms_http')))
+// app.use((req, res, next) => {
+//   const {method, url} = req
+//   if(method.toUpperCase() !== 'OPTIONS'){
+//     Log.setName(req.get('name'))
+//     // Log.name = req.get('name')
+//     // Log.getLog4js().connectLogger(Log.getLogger('cms_http'), {format: ':method :url'})
+//   }
+//   next()
+// })
+app.use(Log.getLog4js().connectLogger(Log.getLogger('cms_http'), {format: ':method :url'}))
 // 启动压缩 -- 系统级中间件
 app.use(compression)
 // 处理options请求。设置response对象的可允许跨域的header信息
@@ -197,6 +207,7 @@ function bodyJSON (req, res, next) {
           req.body = null
         }
     }else if(['GET', 'DELETE'].indexOf(method) !== -1){
+      console.log('cms 210:', req.query);
       req.body = req.query
     }
     next() // 没有这一行，所有接口都会hang住
@@ -215,7 +226,8 @@ function bodyParse (req, res, next) {
     // GET DELETE body为一个空行
     req.body = data
     if (data && req.body) {
-      varLogger.log(`[parseBody function] the data is ${req.body}`)
+      console.log('cms 228:', req.body)
+      varLogger.info(`[parseBody function] the data is ${req.body}`)
     }
     next()
   })
@@ -224,8 +236,10 @@ function bodyParse (req, res, next) {
 function allowCors (req, res, next) {
   res.header('Access-Control-Allow-Origin', '*')
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
-  res.header('Access-Control-Allow-Headers', 'Content-Type,Content-Length,Authorization,X-Request-With')
-
+  // res.header('Access-Control-Allow-Credentials', true)
+  res.header('Access-Control-Allow-Headers', 'Content-Type,Content-Length,Authorization,X-Request-With,name')
+  console.log('cms 241:', req.url);
+  console.log('cms 241:', req.query);
   if (req.method === 'OPTIONS') {
     res.sendStatus(200)
   } else {

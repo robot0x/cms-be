@@ -1,5 +1,4 @@
 class Utils {
-
   // 短id转长id
   static getLongId (nid) {
     if (nid == void 0) { // eslint-disable-line

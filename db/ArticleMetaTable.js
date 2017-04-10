@@ -7,7 +7,6 @@ const ImageTable = require('./ImageTable')
 const articleContentTable = new ArticleContentTable()
 const imageTable = new ImageTable()
 const Log = require('../utils/Log')
-const runLogger = Log.getLogger('cms_run')
 const varLogger = Log.getLogger('cms_var')
 
 class ArticleMetaTable extends Table {

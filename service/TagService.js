@@ -6,9 +6,9 @@ const logger = log4js.getLogger()
 
 class TagsService {
 
-  constructor () {
-    console.log('TagService 实例化....');
-  }
+  // constructor () {
+  //   console.log('TagService 实例化....');
+  // }
 
   list () {
     return new Promise((resolve, reject) => {
