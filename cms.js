@@ -12,7 +12,6 @@ const server_timestamp = _.now()
 const Log = require('./utils/Log')
 const varLogger = Log.getLogger('cms_var')
 const runLogger = Log.getLogger('cms_run')
-
 /**
   200 OK - [GET]：服务器成功返回用户请求的数据，该操作是幂等的（Idempotent）。
   201 CREATED - [POST/PUT/PATCH]：用户新建或修改数据成功。
