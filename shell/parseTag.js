@@ -15,7 +15,7 @@ fs.readFile('./tag_name','utf8', (err, text) => {
     // `keywords`
     // `description`
     // `parent`
-    INSERTs.push(`INSERT article_tag_name set tid=${tid},name='${name}',level=${level},parent = ${parent || 'NULL'},keywords='${keywords}',description='${description}';`)
+    INSERTs.push(`INSERT diaodiao_article_tag_name set tid=${tid},name='${name}',level=${level},parent = ${parent || 'NULL'},keywords='${keywords}',description='${description}';`)
   }
 
   fs.writeFile('./mysql/article_tag_name_INSERT.sql', INSERTs.join('\n'), 'utf8', err => {

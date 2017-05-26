@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "author": "liyanfeng",
   "description": "有调CMS系统后端",
-  "main": "cms.js",
+  "main": "cms-be.js",
   "config": {
     "root": "",
     "root2": "cms/api/v1/",
@@ -11,8 +11,9 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node cms.js",
-    "dev": "nodemon cms.js"
+    "start": "pm2 start cms-be.js -i max",
+    "nstart": "node cms-be.js",
+    "dev": "NODE_ENV=dev nodemon cms-be.js"
   },
   "keywords": [
     "有调",

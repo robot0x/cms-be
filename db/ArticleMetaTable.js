@@ -1,95 +1,115 @@
 const _ = require('lodash')
 const Table = require('./Table')
-const log4js = require('log4js')
-const logger = log4js.getLogger()
-const ArticleContentTable = require('./ArticleContentTable')
 const ImageTable = require('./ImageTable')
-const articleContentTable = new ArticleContentTable()
 const imageTable = new ImageTable()
+const ArticleContentTable = require('./ArticleContentTable')
+const articleContentTable = new ArticleContentTable()
+const TagIndexTable = require('./TagIndexTable')
+const tagIndexTable = new TagIndexTable()
+const Utils = require('../utils/Utils')
 const Log = require('../utils/Log')
-const varLogger = Log.getLogger('cms_var')
 
 class ArticleMetaTable extends Table {
-
-  constructor() {
-    super('article_meta', [
-      'id', // int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
-      // 'nid', // int(11) unsigned NOT NULL unique COMMENT '文章的短id',
-      'title', // text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '文章title',
-      'share_title', // text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '文章title',
-      'wx_title', // text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '文章title',
-      'wb_title', // text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '文章title',
-      'ctype', // tinyint(2) unsigned NOT NULL COMMENT '文章类型',
-
-      'user', // varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户名',
-      'author', // varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '文章作者id',
-      'lock_by', // varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '被那个作者锁定',
-      'last_update_by' // varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '被那个作者锁定',
-    ],
-    {
-      columns: [
-        'create_time', // timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '文章创建时间',
-        'last_update_time', // timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON update CURRENT_TIMESTAMP COMMENT '文章最后更新时间',]
+  constructor () {
+    super(
+      'diaodiao_article_meta',
+      [
+        `id`, // int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
+        `title`, // varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '文章title，title不做任何处理，内部有换行和空格不要管',
+        `share_title`, // varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT '' COMMENT '分享出去的文章的title',
+        `wx_title`, // varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT '' COMMENT '分享到微信的文章的title',
+        `wb_title`, // varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT '' COMMENT '分享到微博的文章的title',
+        `ctype`, // tinyint(1) unsigned DEFAULT 0 COMMENT '文章类型：1-首页/2-好物/3-专刊/4-活动/5-经验/7-值得买/8-评测/9-专题',
+        `titleex`, // varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT '' COMMENT '专刊专用。在专刊上显示 七个好物、八种经验之类的',
+        `titlecolor`, // int(32) unsigned DEFAULT 0 COMMENT '专刊专用。用来指定标题颜色',
+        `buylink`, // varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT '' COMMENT '分享出去的文章的title',
+        `timetopublish`, // int(10) unsigned DEFAULT 0 COMMENT '定时发布。格式是UNIX时间戳',
+        `price`, // varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT '' COMMENT '价格串。形如：越￥360',
+        `status`, // tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT '当前文章状态: 0-新增的文章/1-已发布/2-未发布',
+        `create_time`, // timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '文章创建时间',
+        `last_update_time`, // timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON update CURRENT_TIMESTAMP COMMENT '文章最后更新时间',
+        `user`, // varchar(60) DEFAULT '' COMMENT '文章被那个用户所创建',
+        `lock_by`, // varchar(60) DEFAULT '' COMMENT '被那个用户锁定',
+        `last_update_by`, // varchar(60) DEFAULT '' COMMENT '最后一次更新的用户',
+        `author` // varchar(60) DEFAULT '' COMMENT '文章作者姓名',
       ],
-      pattern: '%Y-%m-%d %T'
-    },
-    'last_update_time'
+      {
+        columns: [
+          'create_time', // timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '文章创建时间',
+          'last_update_time' // timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON update CURRENT_TIMESTAMP COMMENT '文章最后更新时间',]
+        ],
+        pattern: '%Y-%m-%d %T'
+      },
+      'last_update_time'
     )
   }
 
-  lock (id, user){
+  lock (id, user) {
     return new Promise((resolve, reject) => {
-      this
-      .exec(`SELECT lock_by FROM ${this.table} WHERE id=${id}`)
-      .then(result => {
-        console.log('articleMetaTable lock 43', result)
-        if(this._isValidArray(result)){
-          const { lock_by } = result[0]
-          if(lock_by){
-            resolve({lock_by})
-          }else{
-            this
-            .exec(`update ${this.table} set lock_by='${user}' where id=${id}`)
-            .then(result => {
-              resolve()
-            })
-            .catch(err => {
-              reject(err.message)
-              runLogger(err)
-            })
+      this.exec(`SELECT lock_by FROM ${this.table} WHERE id=${id}`)
+        .then(result => {
+          console.log('articleMetaTable lock 43', result)
+          if (this._isValidArray(result)) {
+            const { lock_by } = result[0]
+            if (lock_by) {
+              resolve({
+                lock_by
+              })
+            } else {
+              this.exec(
+                `update ${this.table} set lock_by='${user}' where id=${id}`
+              )
+                .then(result => {
+                  resolve()
+                })
+                .catch(err => {
+                  Log.exception(err)
+                  reject(err.message)
+                })
+            }
+          } else {
+            reject()
           }
-        }else{
-          reject()
-        }
-      })
-      .catch(err => {
-        reject(err.message)
-        runLogger(err)
-      })
+        })
+        .catch(err => {
+          Log.exception(err)
+          reject(err.message)
+        })
     })
   }
 
-  release (id, user){
+  release (id, user) {
     return new Promise((resolve, reject) => {
-      this
-      .exec(`UPDATE ${this.table} set lock_by='' where id=${id} and lock_by='${user}'`)
-      .then(result => {
-        resolve()
-      })
-      .catch(err => {
-        reject(err.message)
-        runLogger(err)
-      })
+      this.exec(
+        `UPDATE ${this.table} set lock_by='' where id=${id} and lock_by='${user}'`
+      )
+        .then(result => {
+          resolve()
+        })
+        .catch(err => {
+          Log.exception(err)
+          reject(err.message)
+        })
     })
   }
-
+  /**
+   * @param {number} id
+   * @param {string} user
+   * @returns promise
+   *
+   * @memberof ArticleMetaTable
+   * 前端Edit.vue中，点击“清空缓存”，或第一次加载数据，会执行这个方法
+   */
   all (id, user) {
     // console.log('articleMetaTable all exec id is ', id)
     return new Promise((resolve, reject) => {
       try {
         const batch = []
         console.log('articleMetaTable 58', user)
-        batch.push(this.exec(`
+        // res[0]
+        batch.push(
+          this.exec(
+            `
           SELECT
             a.*,
             c.content AS text,
@@ -98,159 +118,193 @@ class ArticleMetaTable extends Table {
             k.keywords AS keywords,
             k.used_for_search AS used_for_search
           FROM
-            article_meta AS a
+            diaodiao_article_meta AS a
           LEFT JOIN
-            article_content AS c
+            diaodiao_article_content AS c
           ON
             a.id = c.aid
           LEFT JOIN
-            article_gift_hint AS g
+            diaodiao_article_gift_hint AS g
           ON
             a.id = g.aid
           LEFT JOIN
-            article_keywords AS k
+            diaodiao_article_keywords AS k
           ON
             a.id = k.aid
           WHERE
             a.id = ${id}
           `
-        ))
-        batch.push(imageTable.exec(`SELECT ${imageTable.columnsStr} FROM ${imageTable.table} WHERE aid=${id}`))
-        // 只有当lock_by 没有值时，才可以被UPDATE
-        batch.push(this.exec(`UPDATE ${this.table} set lock_by='${user}' where id=${id} and lock_by=''`))
+          )
+        )
+        // res[1]
+        batch.push(
+          imageTable.exec(
+            `SELECT ${imageTable.columnsStr} FROM ${imageTable.table} WHERE aid=${id}`
+          )
+        )
+        // res[2]
+        batch.push(
+          tagIndexTable.getById(id)
+        )
+        // res[3]
+        // 只有当 lock_by 没有值时，才可以被UPDATE
+        batch.push(
+          this.exec(
+            `UPDATE ${this.table} set lock_by='${user}' where id=${id} and lock_by=''`
+          )
+        )
         Promise.all(batch)
-        .then(res => {
-          console.log('articleMetaTable 89:', res)
-          // console.log('articleMetaTable 73:', res.length)
-          let [[ret]] = res
-          if(ret){
-            ret.images = res[1]
-            // console.log('articleMetaTable 76:', ret)
-            resolve(ret)
-          }else{
-            console.log('articleMetaTable 96:', 'ret不存在。。。。。。。')
-            resolve({})
-          }
-        })
-        .catch(err => {
-          // console.log('articleMetaTable 80:', err)
-          reject(err.message)
-          runLogger(err)
-        })
+          .then(res => {
+            console.log('articleMetaTable 89:', res)
+            // console.log('articleMetaTable 73:', res.length)
+            let [[ret]] = res
+            if (ret) {
+              ret.images = res[1]
+              ret.tags = res[2]
+              // console.log('articleMetaTable 76:', ret)
+              resolve(ret)
+            } else {
+              console.log('articleMetaTable 96:', 'ret不存在。。。。。。。')
+              resolve({})
+            }
+          })
+          .catch(err => {
+            // console.log('articleMetaTable 80:', err)
+            Log.exception(err)
+            reject(err.message)
+          })
       } catch (e) {
+        Log.exception(e)
         reject(e.message)
-        runLogger(err)
       }
     })
   }
 
-  _isValidArray(arr){
+  _isValidArray (arr) {
     return arr && Array.isArray(arr) && arr.length > 0
   }
-
+  /**
+   * @param {object} param
+   * @returns promise
+   * @memberof ArticleMetaTable
+   * 在Edit.vue中，点击“保存”执行该方法
+   */
   updateAll (param) {
-      return new Promise((resolve, reject) => {
-        try {
-          // TODO: 数据保存逻辑
-          // console.log('articleMetaTable 40:', param)
-          const {id, meta, images, content, gift, keywords, tags} = param
-          const batch = []
-          console.log('articleMetaTable 100', meta)
-          batch.push(this.exec(`UPDATE ${this.table} SET ? WHERE id=${id}`, meta))
-          batch.push(this.exec(
-            `
-            INSERT INTO
+    return new Promise((resolve, reject) => {
+      try {
+        // TODO: 数据保存逻辑
+        // console.log('articleMetaTable 40:', param)
+        const { id, meta, images, content, gift, keywords, tags } = param
+        const batch = []
+        console.log('articleMetaTable 100', param)
+        batch.push(
+          this.exec(`UPDATE ${this.table} SET ? WHERE id=${id}`, meta)
+        )
+        batch.push(
+          this.exec(
+            `INSERT INTO
               ${articleContentTable.table} (${articleContentTable.columnsStr})
             VALUES
               (${id}, '${content}')
             ON DUPLICATE KEY
             UPDATE
-              content = '${content}'
-            `
-          ))
+              content = '${content}'`
+          )
+        )
 
-          if(this._isValidArray(images)){
-            // tid url type origin_filename extension_name size width height
+        if (this._isValidArray(images)) {
+          // tid url type origin_filename extension_name size width height
 
-
-            // const bulks = []
-            // let cols = Object.keys(images[0])
-            // console.log('articleMetaTable 58:', cols);
-            // for(const image of images){
-            //   bulks.push(_.values(image))
-            // }
-            // // TODO:这块儿需要修改，由于是异步的，
-            // // 不能执行先删后插的操作，删除可能在插入之后执行
-            // // 不要信任异步操作的顺序
-            // batch.push(this.exec(`DELETE FROM ${imageTable.table} where aid=${id}`))
-            // console.log('articleMetaTable 124', cols)
-            // batch.push(this.exec(`INSERT INTO ${imageTable.table} (${cols}) VALUES ?`, [bulks]))
-
-
-            // batch.push(this.exec(`INSERT INTO ${imageTable.table} (aid,url,type,used,origin_filename,extension_name,size,width,height) VALUES ?`, [bulks]))
-            // 需要根据上传的image是否有id来确定是UPDATE或INSERT
-            console.log('articleMetaTable 133', images)
-            for(const image of images) {
-              // 如果图片没有任何修改，就无需执行任何sql
-              // if(!image.isModify) continue;
-              delete image.isModify
-              console.log('articleMetaTable updateAll 186:', image)
-              const {id} = image
-              let imageSQL = `UPDATE ${imageTable.table} SET used=${image.used}, type='${image.type}' WHERE id=${id}`
-              if(!id){
-                delete image.id
-                imageSQL = `INSERT ${imageTable.table} SET ?`
-              }
-              console.log('articleMetaTable 143:', imageSQL)
-              batch.push(this.exec(imageSQL, image))
+          // const bulks = []
+          // let cols = Object.keys(images[0])
+          // console.log('articleMetaTable 58:', cols);
+          // for(const image of images){
+          //   bulks.push(_.values(image))
+          // }
+          // TODO:这块儿需要修改，由于是异步的，
+          // 不能执行先删后插的操作，删除可能在插入之后执行
+          // 不要信任异步操作的顺序
+          // batch.push(this.exec(`DELETE FROM ${imageTable.table} where aid=${id}`))
+          // console.log('articleMetaTable 124', cols)
+          // batch.push(this.exec(`INSERT INTO ${imageTable.table} (${cols}) VALUES ?`, [bulks]))
+          // batch.push(this.exec(`INSERT INTO ${imageTable.table} (aid,url,type,used,origin_filename,extension_name,size,width,height) VALUES ?`, [bulks]))
+          // 需要根据上传的image是否有id来确定是UPDATE或INSERT
+          console.log('articleMetaTable 133', images)
+          for (const image of images) {
+            const { id } = image
+            // 如果图片不是新上传的且没有任何修改，就无需执行任何sql
+            if (id && !image.isModify) continue
+            delete image.isModify
+            console.log('articleMetaTable updateAll 186:', image)
+            let imageSQL = `UPDATE ${imageTable.table} SET used=${image.used}, type='${image.type}' WHERE id=${id}`
+            if (!id) {
+              delete image.id
+              imageSQL = `INSERT ${imageTable.table} SET ?`
             }
+            console.log('articleMetaTable 143:', imageSQL)
+            batch.push(this.exec(imageSQL, image))
           }
+        }
 
-          // 插入关键词表 DONE
-          if(!_.isEmpty(keywords)){
-            batch.push(this.exec(`
+        // 插入关键词表 DONE
+        if (!_.isEmpty(keywords)) {
+          batch.push(
+            this.exec(
+              `
               INSERT INTO
-                article_keywords (aid,used_for_search,keywords)
+                diaodiao_article_keywords (aid,used_for_search,keywords)
               VALUES
                 (${id},${keywords.used_for_search},'${keywords.keywords}')
               ON DUPLICATE KEY
               UPDATE
                 used_for_search = ${keywords.used_for_search}, keywords = '${keywords.keywords}'`
-            ))
-          }
-
-          // 插入礼物表 DONE
-          if(!_.isEmpty(gift)){
-            batch.push(this.exec(`
+            )
+          )
+        }
+        // 插入礼物表 DONE
+        if (!_.isEmpty(gift)) {
+          batch.push(
+            this.exec(
+              `
               INSERT INTO
-                article_gift_hint (aid,used_for_gift,hints)
+                diaodiao_article_gift_hint (aid,used_for_gift,hints)
               VALUES
                 (${id},${gift.used_for_gift},'${gift.hints}')
               ON DUPLICATE KEY UPDATE
                 used_for_gift=${gift.used_for_gift}, hints = '${gift.hints}'
-            `))
+            `
+            )
+          )
+        }
+        // 先删后插
+        this.exec(`DELETE FROM diaodiao_article_tag_index WHERE aid = ${id}`).then(() => {
+          let { ctype } = meta
+          let tagInsertSql = `INSERT INTO diaodiao_article_tag_index (aid,tag1,tag2) VALUES `
+          let values = [`(${id},'page_type','${Utils.ctypeToType(ctype)}')`]
+          if (!_.isEmpty(tags)) {
+            for (let t of tags) {
+              values.push(`(${id},'${t.tag1}','${t.tag2}')`)
+            }
           }
-
-          if(!_.isEmpty(tags)){
-            batch.push()
-          }
-
-          Promise.all(batch)
+          tagInsertSql += values.join(',')
+          Log.business(tagInsertSql)
+          batch.push(this.exec(tagInsertSql))
+        })
+        Promise.all(batch)
           .then(res => {
             // console.log('articleMetaTable 47:', res)
             resolve()
           })
           .catch(err => {
             // console.log('articleMetaTable 51:', err)
+            Log.exception(err)
             reject(err.message)
-            runLogger(err)
           })
-        } catch (e) {
-            reject(e.message)
-            runLogger(e)
-        }
-
-      })
+      } catch (e) {
+        Log.exception(e)
+        reject(e.message)
+      }
+    })
   }
 
   /**
@@ -261,65 +315,77 @@ class ArticleMetaTable extends Table {
    */
   getByTitle (title, orderBy, pagination, isLike) {
     let where = ` WHERE title = '${title}' `
-    if(isLike){
+    if (isLike) {
       where = ` WHERE title like '%${title}%' `
     }
     orderBy = orderBy || this._getOrderBy(orderBy)
     let limit = this._getPagination(pagination)
-    let sql =  `SELECT ${this.columnsStr} FROM ${this.table} ${where} ${orderBy} ${limit} `
+    let sql = `SELECT ${this.columnsStr} FROM ${this.table} ${where} ${orderBy} ${limit} `
     return new Promise((resolve, reject) => {
-      if(limit){
-        super.total(where).then(countRes => {
-             super.exec(sql).then(result => {
-               resolve({
-                 total: countRes[0].count,
-                 articles: result
-               })
-             })
-             .catch(err => {
-               reject(err.message)
-               runLogger(err)
-             })
+      if (limit) {
+        super
+          .total(where)
+          .then(countRes => {
+            super
+              .exec(sql)
+              .then(result => {
+                resolve({
+                  total: countRes[0].count,
+                  articles: result
+                })
+              })
+              .catch(err => {
+                Log.exception(err)
+                reject(err.message)
+              })
           })
           .catch(err => {
+            Log.exception(err)
             reject(err.message)
-            runLogger(err)
           })
-      }else{
-        super.exec(sql).then(result => {
-          resolve({
-            articles: result
+      } else {
+        super
+          .exec(sql)
+          .then(result => {
+            resolve({
+              articles: result
+            })
           })
-        })
-        .catch(err => {
-          reject(err.message)
-          runLogger(err)
-        })
+          .catch(err => {
+            Log.exception(err)
+            reject(err.message)
+          })
       }
     })
   }
 
   getByMonth (month, orderBy, pagination) {
-      orderBy = orderBy || this._getOrderBy(orderBy)
-      let limit = this._getPagination(pagination)
-      let where = ` WHERE DATE_FORMAT('${month}', '%Y%m') = DATE_FORMAT(${this.orderByCol}, '%Y%m') `
-      let sql =  `SELECT ${this.columnsStr} from ${this.table} ${where} ${orderBy} ${limit} `
-      return new Promise((resolve, reject) => {
-          super.total(where).then(countRes => {
-             super.exec(sql).then(result => {
-               resolve({
-                 total: countRes[0].count,
-                 articles: result
-               })
-             }).catch(err => {
-               reject(err.message)
-               runLogger(err)
-             })
-          }).catch(err => {
-            reject(err.message)
-            runLogger(err)
-          })
-      })
+    orderBy = orderBy || this._getOrderBy(orderBy)
+    let limit = this._getPagination(pagination)
+    let where = ` WHERE DATE_FORMAT('${month}', '%Y%m') = DATE_FORMAT(${this.orderByCol}, '%Y%m') `
+    let sql = `SELECT ${this.columnsStr} from ${this.table} ${where} ${orderBy} ${limit} `
+    return new Promise((resolve, reject) => {
+      super
+        .total(where)
+        .then(countRes => {
+          super
+            .exec(sql)
+            .then(result => {
+              resolve({
+                total: countRes[0].count,
+                articles: result
+              })
+            })
+            .catch(err => {
+              Log.exception(err)
+              reject(err.message)
+            })
+        })
+        .catch(err => {
+          Log.exception(err)
+          reject(err.message)
+        })
+    })
   }
 
   getStatisticsByMonthly () {
@@ -338,10 +404,12 @@ class ArticleMetaTable extends Table {
       //     count: 200
       //   }]
       // }
+
+      // 应该按照 create_time 来进行统计 而不是原来我认为的 last_update_time
       const sql = `
       SELECT
-        CONVERT(DATE_FORMAT(last_update_time, '%Y'), SIGNED) AS year,
-        CONVERT(DATE_FORMAT(last_update_time, '%m'), SIGNED) AS month,
+        CONVERT(DATE_FORMAT(create_time, '%Y'), SIGNED) AS year,
+        CONVERT(DATE_FORMAT(create_time, '%m'), SIGNED) AS month,
         COUNT(id) AS count
       FROM
         ${this.table}
@@ -351,268 +419,313 @@ class ArticleMetaTable extends Table {
         year DESC,
         month DESC
       `
-      super.exec(sql)
-      .then(res => {
-        let ret = []
-        // res = [{year: '2014', month: '10', count: 1 }, { year: '2014', month: '12', count: 1}, ...]
-        // ret = [{year: '2014', months:[{month:'10', count: 1},{month:'12', count:1}]}, ...]
-        if(res && Array.isArray(res)){
-          res.map(row => {
-            const {year, month, count} = row
-            const yearIndex = _.findIndex(ret, y => y.year === year)
-            const hasYear = yearIndex > -1
-            const monthData = {month, count}
-            if(hasYear){
-              const months = ret[yearIndex].months
-              if(months && months.length) {
-                ret[yearIndex].months.push(monthData)
-              }else{
-                ret[yearIndex].months = [monthData]
+      super
+        .exec(sql)
+        .then(res => {
+          let ret = []
+          // res = [{year: '2014', month: '10', count: 1 }, { year: '2014', month: '12', count: 1}, ...]
+          // ret = [{year: '2014', months:[{month:'10', count: 1},{month:'12', count:1}]}, ...]
+          if (res && Array.isArray(res)) {
+            res.map(row => {
+              const { year, month, count } = row
+              const yearIndex = _.findIndex(ret, y => y.year === year)
+              const hasYear = yearIndex > -1
+              const monthData = {
+                month,
+                count
               }
-              ret[yearIndex].count += count
-            }else{
-              ret.push({year, count , months:[monthData]})
-            }
-          })
-        }
-        resolve(ret)
-      })
-      .catch(err => {
-        reject(err.message)
-        runLogger(err)
-      })
+              if (hasYear) {
+                const months = ret[yearIndex].months
+                if (months && months.length) {
+                  ret[yearIndex].months.push(monthData)
+                } else {
+                  ret[yearIndex].months = [monthData]
+                }
+                ret[yearIndex].count += count
+              } else {
+                ret.push({
+                  year,
+                  count,
+                  months: [monthData]
+                })
+              }
+            })
+          }
+          resolve(ret)
+        })
+        .catch(err => {
+          Log.exception(err)
+          reject(err.message)
+        })
     })
   }
 
   create (param) {
     return new Promise((resolve, reject) => {
-      super.create(param).then(result => {
-        resolve({id: result.INSERTId})
-      })
-      .catch(err => {
-        reject(err.message)
-        runLogger(err)
-      })
+      super
+        .create(param)
+        .then(result => {
+          resolve({
+            id: result.INSERTId
+          })
+        })
+        .catch(err => {
+          Log.exception(err)
+          reject(err.message)
+        })
     })
   }
 
-  getAll(orderBy, limit){
+  getAll (orderBy, limit) {
     return new Promise((resolve, reject) => {
-      if(limit){
-        super.total().then(countRes => {
-             super.getAll(orderBy, limit).then(result => {
-               resolve({
-                 total: countRes[0].count,
-                 articles: result
-               })
-             }).catch(err => {
-               reject(err.message)
-               runLogger(err)
-             })
-          }).catch(err => {
+      if (limit) {
+        super
+          .total()
+          .then(countRes => {
+            super
+              .getAll(this.orderByCol, limit)
+              .then(result => {
+                resolve({
+                  total: countRes[0].count,
+                  articles: result
+                })
+              })
+              .catch(err => {
+                Log.exception(err)
+                reject(err.message)
+              })
+          })
+          .catch(err => {
+            Log.exception(err)
             reject(err.message)
-            runLogger(err)
           })
-      }else{
-        super.getAll(orderBy, limit)
-        .then(result => {
-          resolve({
-            articles: result
+      } else {
+        super
+          .getAll(orderBy, limit)
+          .then(result => {
+            resolve({
+              articles: result
+            })
           })
-        }).catch(err => {
-          reject(err.message)
-          runLogger(err)
-        })
+          .catch(err => {
+            Log.exception(err)
+            reject(err.message)
+          })
       }
     })
   }
 
   getById (id) {
     return new Promise((resolve, reject) => {
-      super.getById(id).then(result => {
-        resolve({
-          articles: result,
-          total: result.length
-        })
-      })
-      .catch(err => {
-        reject(err.message)
-        runLogger(err)
-      })
-    })
-  }
-
-
-  getByCtype (ctype, orderBy, pagination){
-    let where = ` where ctype = '${ctype}' `
-    orderBy = orderBy || this._getOrderBy(orderBy)
-    let limit = this._getPagination(pagination)
-    const sql =  `SELECT ${this.columnsStr} from ${this.table} ${where} ${orderBy} ${limit} `
-    return new Promise((resolve, reject) => {
-      if(limit){
-        super.total(where).then(countRes => {
-             super.exec(sql).then(result => {
-               resolve({
-                 total: countRes[0].count,
-                 articles: result
-               })
-             })
-             .catch(err => {
-               reject(err.message)
-               runLogger(err)
-             })
-          })
-          .catch(err => {
-            reject(err.message)
-            runLogger(err)
-          })
-      }else{
-        super.exec(sql).then(result => {
+      super
+        .getById(id)
+        .then(result => {
           resolve({
-            articles: result
+            articles: result,
+            total: result.length
           })
         })
         .catch(err => {
+          Log.exception(err)
           reject(err.message)
-          runLogger(err)
         })
+    })
+  }
+
+  getByCtype (ctype, orderBy, pagination) {
+    let where = ` where ctype = '${ctype}' `
+    orderBy = orderBy || this._getOrderBy(orderBy)
+    let limit = this._getPagination(pagination)
+    const sql = `SELECT ${this.columnsStr} from ${this.table} ${where} ${orderBy} ${limit} `
+    return new Promise((resolve, reject) => {
+      if (limit) {
+        super
+          .total(where)
+          .then(countRes => {
+            super
+              .exec(sql)
+              .then(result => {
+                resolve({
+                  total: countRes[0].count,
+                  articles: result
+                })
+              })
+              .catch(err => {
+                Log.exception(err)
+                reject(err.message)
+              })
+          })
+          .catch(err => {
+            Log.exception(err)
+            reject(err.message)
+          })
+      } else {
+        super
+          .exec(sql)
+          .then(result => {
+            resolve({
+              articles: result
+            })
+          })
+          .catch(err => {
+            Log.exception(err)
+            reject(err.message)
+          })
       }
     })
   }
 
   getByUser (user, orderBy, pagination, isLike) {
     let where = ` where user = '${user}' `
-    if(isLike){
+    if (isLike) {
       where = ` where user like '%${user}%' `
     }
     orderBy = orderBy || this._getOrderBy(orderBy)
     let limit = this._getPagination(pagination)
-    const sql =  `SELECT ${this.columnsStr} from ${this.table} ${where} ${orderBy} ${limit} `
+    const sql = `SELECT ${this.columnsStr} from ${this.table} ${where} ${orderBy} ${limit} `
     return new Promise((resolve, reject) => {
-      if(limit){
-        super.total(where).then(countRes => {
-             super.exec(sql).then(result => {
-               resolve({
-                 total: countRes[0].count,
-                 articles: result
-               })
-             })
-             .catch(err => {
-               reject(err.message)
-               runLogger(err)
-             })
+      if (limit) {
+        super
+          .total(where)
+          .then(countRes => {
+            super
+              .exec(sql)
+              .then(result => {
+                resolve({
+                  total: countRes[0].count,
+                  articles: result
+                })
+              })
+              .catch(err => {
+                Log.exception(err)
+                reject(err.message)
+              })
           })
           .catch(err => {
+            Log.exception(err)
             reject(err.message)
-            runLogger(err)
           })
-      }else{
-        super.exec(sql).then(result => {
-          resolve({
-            articles: result
+      } else {
+        super
+          .exec(sql)
+          .then(result => {
+            resolve({
+              articles: result
+            })
           })
-        })
-        .catch(err => {
-          reject(err.message)
-          runLogger(err)
-        })
+          .catch(err => {
+            Log.exception(err)
+            reject(err.message)
+          })
       }
     })
   }
 
   getByAuthor (author, orderBy, pagination, isLike) {
     let where = ` where author = '${author}' `
-    if(isLike){
+    if (isLike) {
       where = ` where author like '%${author}%' `
     }
     orderBy = orderBy || this._getOrderBy(orderBy)
     let limit = this._getPagination(pagination)
-    const sql =  `SELECT ${this.columnsStr} from ${this.table} ${where} ${orderBy} ${limit} `
+    const sql = `SELECT ${this.columnsStr} from ${this.table} ${where} ${orderBy} ${limit} `
     return new Promise((resolve, reject) => {
-      if(limit){
-        super.total(where).then(countRes => {
-             super.exec(sql).then(result => {
-               resolve({
-                 total: countRes[0].count,
-                 articles: result
-               })
-             })
-             .catch(err => {
-               reject(err.message)
-               runLogger(err)
-             })
+      if (limit) {
+        super
+          .total(where)
+          .then(countRes => {
+            super
+              .exec(sql)
+              .then(result => {
+                resolve({
+                  total: countRes[0].count,
+                  articles: result
+                })
+              })
+              .catch(err => {
+                Log.exception(err)
+                reject(err.message)
+              })
           })
           .catch(err => {
+            Log.exception(err)
             reject(err.message)
-            runLogger(err)
           })
-      }else{
-        super.exec(sql).then(result => {
-          resolve({
-            articles: result
+      } else {
+        super
+          .exec(sql)
+          .then(result => {
+            resolve({
+              articles: result
+            })
           })
-        })
-        .catch(err => {
-          reject(err.message)
-          runLogger(err)
-        })
+          .catch(err => {
+            Log.exception(err)
+            reject(err.message)
+          })
       }
     })
   }
   /**
    * TODO: 传入的time为 timestamp
    */
-  getByTime (time, orderBy, pagination){
+  getByTime (time, orderBy, pagination) {
     let where = ` where time = '${time}' `
-    if(isLike){
-      where = ` where time like '%${time}%' `
-    }
+    // if (isLike) {
+    //   where = ` where time like '%${time}%' `
+    // }
     orderBy = orderBy || this._getOrderBy(orderBy)
     let limit = this._getPagination(pagination)
-    const sql =  `SELECT ${this.columnsStr} from ${this.table} ${where} ${orderBy} ${limit} `
+    const sql = `SELECT ${this.columnsStr} from ${this.table} ${where} ${orderBy} ${limit} `
     return new Promise((resolve, reject) => {
-      if(limit){
-        super.total(where).then(countRes => {
-             super.exec(sql).then(result => {
-               resolve({
-                 total: countRes[0].count,
-                 articles: result
-               })
-             })
-             .catch(err => {
-               reject(err.message)
-               runLogger(err)
-             })
+      if (limit) {
+        super
+          .total(where)
+          .then(countRes => {
+            super
+              .exec(sql)
+              .then(result => {
+                resolve({
+                  total: countRes[0].count,
+                  articles: result
+                })
+              })
+              .catch(err => {
+                Log.exception(err)
+                reject(err.message)
+              })
           })
           .catch(err => {
+            Log.exception(err)
             reject(err.message)
-            runLogger(err)
           })
-      }else{
-        super.exec(sql).then(result => {
-          resolve({
-            articles: result
+      } else {
+        super
+          .exec(sql)
+          .then(result => {
+            resolve({
+              articles: result
+            })
           })
-        })
-        .catch(err => {
-          reject(err.message)
-          runLogger(err)
-        })
+          .catch(err => {
+            Log.exception(err)
+            reject(err.message)
+          })
       }
     })
   }
 
   _getOrderBy (orderBy) {
     orderBy = orderBy || ''
-    if(!orderBy){
+    if (!orderBy) {
       orderBy = ` order by ${this.orderByCol} desc `
     }
     return orderBy
   }
 
-  _getPagination (pagination){
+  _getPagination (pagination) {
     let limit = ''
-    if(pagination && !_.isEmpty(pagination)){
+    if (pagination && !_.isEmpty(pagination)) {
       limit = ` limit ${pagination.offset}, ${pagination.limit} `
     }
     return limit

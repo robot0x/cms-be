@@ -9,34 +9,31 @@ const AuthorService = require('./AuthorService')
  *  根据不同的请求来初始化相应的业务类
  */
 class ServiceFactory {
-
-  constructor(action) {
+  constructor (action) {
     this.action = action
   }
 
-  getService() {
+  getService () {
     let serviceInstance = null
     switch (this.action) {
       case 'articles':
         serviceInstance = new ArticleService()
-        break;
+        break
       case 'users':
         serviceInstance = new UserService()
-        break;
+        break
       case 'images':
         serviceInstance = new ImageService()
-        break;
+        break
       case 'tags':
         serviceInstance = new TagService()
-        break;
+        break
       case 'authors':
         serviceInstance = new AuthorService()
-        break;
+        break
     }
     return serviceInstance
   }
-
 }
-
 
 module.exports = ServiceFactory

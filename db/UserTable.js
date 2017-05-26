@@ -1,11 +1,9 @@
 const Table = require('./Table')
 const Log = require('../utils/Log')
-const runLogger = Log.getLogger('cms_run')
-const varLogger = Log.getLogger('cms_var')
 
 class UserTable extends Table {
-  constructor(){
-    super('user', [
+  constructor () {
+    super('diaodiao_cms_user', [
       'id', // int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '作者自增id',
       'name', // varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL unique COMMENT '帐号',
       'password', // varchar(30) NOT NULL COMMENT '密码',
@@ -15,24 +13,51 @@ class UserTable extends Table {
     ])
   }
 
-  auth (user, password) {
+  modifyPassword (user, password) {
+    console.log('modifyPassword 执行了 ...')
     return new Promise((resolve, reject) => {
-      super.exec(`SELECT COUNT(id) AS has FROM ${this.table} WHERE name='${user}' and password='${password}'`)
-      .then(result => {
-        console.log('UserTable 19', result)
-        resolve({
-          auth: result[0].has > 0
+      super
+        .exec(
+          `UPDATE  ${this.table} SET password='${password}' WHERE name='${user}'`
+        )
+        .then(result => {
+          console.log('UserTable 24', result)
+          if (result.affectedRows) {
+            resolve({ action: true })
+          } else {
+            resolve({action: false})
+          }
         })
-      })
-      .catch(err => {
-        reject(err)
-        runLogger.error(err)
-      })
+        .catch(err => {
+          Log.exception(err)
+          reject(err)
+        })
+    })
+  }
+  auth (user, password) {
+    console.log('auth 执行了 ...')
+    return new Promise((resolve, reject) => {
+      super
+        .exec(
+          `SELECT COUNT(id) AS has FROM ${this.table} WHERE name='${user}' and password='${password}'`
+        )
+        .then(result => {
+          console.log('UserTable 19', result)
+          resolve({
+            auth: result[0].has > 0
+          })
+        })
+        .catch(err => {
+          Log.exception(err)
+          reject(err)
+        })
     })
   }
 
   getUserAndCount () {
-    return super.exec(`SELECT user AS name, COUNT(a.id) AS count FROM article_meta AS a, ${this.table} AS u WHERE a.user = u.name GROUP BY u.name`)
+    return super.exec(
+      `SELECT user AS name, COUNT(a.id) AS count FROM diaodiao_article_meta AS a, ${this.table} AS u WHERE a.user = u.name GROUP BY u.name`
+    )
   }
 }
 

@@ -1,45 +1,23 @@
-const log4js = require("log4js");
-const cfg = require("../config/log4js.json")
+const log4js = require('log4js')
+const cfg = require('../config/log4js')
 log4js.configure(cfg)
-
+const bus = log4js.getLogger('business')
+const exce = log4js.getLogger('exception')
+const http = log4js.getLogger('http')
+// business  业务日志
+// exception 异常日志 抛出的error信息都会记录在这里
 class Log {
-  static handleMsg (msg) {
-    const username = Log.username
-    if(!username){
-      return ''
-    }
-    let arg = msg
-    if(typeof msg === 'object'){
-      msg = JSON.stringify(msg)
-    }else{
-      msg = msg.toString()
-    }
-    if(msg.indexOf(`[${username}]：`) === -1){
-      arg = `[${username}]：${msg}`
-    }
-    return arg
-  }
-  static setName (name) {
-    Log.username = name
-  }
-  static getLog4js() {
+  static getLog4js () {
     return log4js
   }
-  static getLogger(category = 'cms_var') {
-    var logger = log4js.getLogger(category)
-    // var info = logger.info
-    // var log = logger.log
-    // var error = logger.error
-    // logger.info = msg => {
-    //   info.call(logger, Log.handleMsg(msg))
-    // }
-    // logger.log = msg => {
-    //   log.call(logger, Log.handleMsg(msg))
-    // }
-    // logger.error = msg => {
-    //   error.call(logger, Log.handleMsg(msg))
-    // }
-    return logger
+  static getHttpLogger () {
+    return http
+  }
+  static business (msg) {
+    bus.info(msg)
+  }
+  static exception (msg) {
+    exce.error(msg)
   }
 }
 
