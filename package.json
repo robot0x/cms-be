@@ -11,9 +11,10 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "pm2 start cms-be.js -i max",
+    "dev": "NODE_ENV=dev nodemon cms-be.js",
     "nstart": "node cms-be.js",
-    "dev": "NODE_ENV=dev nodemon cms-be.js"
+    "start": "pm2 start cms-be.js",
+    "restart": "pm2 restart cms-be"
   },
   "keywords": [
     "有调",
