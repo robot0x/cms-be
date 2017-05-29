@@ -49,7 +49,7 @@ class Table {
             // connection.commit()
           })
           .catch(err => {
-            Log.exception(err)
+            Log.exception(sql + err)
             reject(err)
             // connection.rollback()
             // runLogger.error(err)
@@ -72,7 +72,7 @@ class Table {
   }
 
   total (where = '') {
-    return this.exec(`SELECT count(id) AS count FROM ${this.table} ${where}`)
+    return this.exec(`SELECT count(1) AS count FROM ${this.table} ${where}`)
   }
 
   getById (id) {

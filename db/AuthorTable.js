@@ -6,7 +6,7 @@ class AuthorTable extends Table {
     super(
       'diaodiao_author',
       [
-        'id',
+        'author_id',
         'source',
         'pic_uri',
         'title',
@@ -18,7 +18,7 @@ class AuthorTable extends Table {
         'brief'
       ],
       '',
-      'id'
+      'author_id'
     )
   }
   getAll (orderBy, limit) {
