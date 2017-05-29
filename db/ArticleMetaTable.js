@@ -114,7 +114,7 @@ class ArticleMetaTable extends Table {
             a.*,
             c.content AS text,
             g.hints AS gift,
-            g.used_for_gift AS used_for_gift,
+            g.used_for_search AS used_for_gift,
             k.keywords AS keywords,
             k.used_for_search AS used_for_search
           FROM
@@ -267,11 +267,11 @@ class ArticleMetaTable extends Table {
             this.exec(
               `
               INSERT INTO
-                diaodiao_article_gift_hint (aid,used_for_gift,hints)
+                diaodiao_article_gift_hint (aid,used_for_search,hints)
               VALUES
                 (${id},${gift.used_for_gift},'${gift.hints}')
               ON DUPLICATE KEY UPDATE
-                used_for_gift=${gift.used_for_gift}, hints = '${gift.hints}'
+                used_for_search=${gift.used_for_gift}, hints = '${gift.hints}'
             `
             )
           )
