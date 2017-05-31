@@ -17,7 +17,8 @@ module.exports = isDebug
     database: 'cms',
     charset: 'utf8mb4',
     multipleStatement: true,
-    connectionLimit: 15
+    // 10个足够了，防止数目过大占用服务器资源过多
+    connectionLimit: 10
   }
   : {
     host: 'rds7bz3av7bz3av.mysql.rds.aliyuncs.com',
@@ -29,5 +30,6 @@ module.exports = isDebug
     database: 'diaodiao',
     charset: 'utf8mb4',
     multipleStatement: true,
-    connectionLimit: 15
+    // 10个足够了，防止数目过大占用服务器资源过多
+    connectionLimit: 10
   }
