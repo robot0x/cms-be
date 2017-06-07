@@ -229,13 +229,11 @@ class ArticleMetaTable extends Table {
           // batch.push(this.exec(`INSERT INTO ${imageTable.table} (${cols}) VALUES ?`, [bulks]))
           // batch.push(this.exec(`INSERT INTO ${imageTable.table} (aid,url,type,used,origin_filename,extension_name,size,width,height) VALUES ?`, [bulks]))
           // 需要根据上传的image是否有id来确定是UPDATE或INSERT
-          console.log('articleMetaTable 133', images)
           for (const image of images) {
             const { id } = image
             // 如果图片不是新上传的且没有任何修改，就无需执行任何sql
             if (id && !image.isModify) continue
             delete image.isModify
-            console.log('articleMetaTable updateAll 186:', image)
             let imageSQL = `UPDATE ${imageTable.table} SET used=${image.used}, type='${image.type}' WHERE id=${id}`
             if (!id) {
               delete image.id
@@ -246,57 +244,65 @@ class ArticleMetaTable extends Table {
           }
         }
 
+        /**
+         * 2017-06-07 先下掉关键词、tag、gift
+         * 因为还没有测试。。关键词、tag、gift操作在老CMS系统中进行即可
+         * 上线时，解开注释....
+         */
         // 插入关键词表 DONE
-        if (!_.isEmpty(keywords)) {
-          batch.push(
-            this.exec(
-              `
-              INSERT INTO
-                diaodiao_article_keywords (aid,used_for_search,keywords)
-              VALUES
-                (${id},${keywords.used_for_search},'${keywords.keywords}')
-              ON DUPLICATE KEY
-              UPDATE
-                used_for_search = ${keywords.used_for_search}, keywords = '${keywords.keywords}'`
-            )
-          )
-        }
-        // 插入礼物表 DONE
-        if (!_.isEmpty(gift)) {
-          batch.push(
-            this.exec(
-              `
-              INSERT INTO
-                diaodiao_article_gift_hint (aid,used_for_search,hints)
-              VALUES
-                (${id},${gift.used_for_gift},'${gift.hints}')
-              ON DUPLICATE KEY UPDATE
-                used_for_search=${gift.used_for_gift}, hints = '${gift.hints}'
-            `
-            )
-          )
-        }
-        // 先删后插
-        this.exec(`DELETE FROM diaodiao_article_tag_index WHERE aid = ${id}`).then(() => {
-          let { ctype } = meta
-          let tagInsertSql = `INSERT INTO diaodiao_article_tag_index (aid,tag1,tag2) VALUES `
-          let values = [`(${id},'page_type','${Utils.ctypeToType(ctype)}')`]
-          if (!_.isEmpty(tags)) {
-            for (let t of tags) {
-              values.push(`(${id},'${t.tag1}','${t.tag2}')`)
-            }
-          }
-          tagInsertSql += values.join(',')
-          Log.business(tagInsertSql)
-          batch.push(this.exec(tagInsertSql))
-        })
+        // if (!_.isEmpty(keywords)) {
+        //   // 一定要注意操作keyword表要小心，会影响线上搜索
+        //   // 如果keywords字段为空，则用默认的json代替，否则的话搜索会挂
+        //   let key = keywords.keywords || JSON.stringify({category: '', brand: '', similar: '', scene: '', special: ''})
+        //   batch.push(
+        //     this.exec(
+        //       `
+        //       INSERT INTO
+        //         diaodiao_article_keywords (aid,used_for_search,keywords)
+        //       VALUES
+        //         (${id},${keywords.used_for_search},'${key}')
+        //       ON DUPLICATE KEY
+        //       UPDATE
+        //         used_for_search = ${keywords.used_for_search}, keywords = '${key}'`
+        //     )
+        //   )
+        // }
+        // // 插入礼物表 DONE
+        // if (!_.isEmpty(gift)) {
+        //   let hints = gift.hints || JSON.stringify({relation: '', interest: '', gender: '', relation_level: '', age: '', character: '', can_as_gift: '0', scene: ''})
+        //   batch.push(
+        //     this.exec(
+        //       `
+        //       INSERT INTO
+        //         diaodiao_article_gift_hint (aid,used_for_search,hints)
+        //       VALUES
+        //         (${id},${gift.used_for_gift},'${hints}')
+        //       ON DUPLICATE KEY UPDATE
+        //         used_for_search=${gift.used_for_gift}, hints = '${hints}'
+        //     `
+        //     )
+        //   )
+        // }
+        // // 先删后插
+        // this.exec(`DELETE FROM diaodiao_article_tag_index WHERE aid = ${id}`).then(() => {
+        //   let { ctype } = meta
+        //   let tagInsertSql = `INSERT INTO diaodiao_article_tag_index (aid,tag1,tag2) VALUES `
+        //   let values = [`(${id},'page_type','${Utils.ctypeToType(ctype)}')`]
+        //   if (!_.isEmpty(tags)) {
+        //     for (let t of tags) {
+        //       values.push(`(${id},'${t.tag1}','${t.tag2}')`)
+        //     }
+        //   }
+        //   tagInsertSql += values.join(',')
+        //   Log.business(tagInsertSql)
+        //   batch.push(this.exec(tagInsertSql))
+        // })
+
         Promise.all(batch)
           .then(res => {
-            // console.log('articleMetaTable 47:', res)
             resolve()
           })
           .catch(err => {
-            // console.log('articleMetaTable 51:', err)
             Log.exception(err)
             reject(err.message)
           })
