@@ -1,6 +1,6 @@
 #!/bin/sh
 source ~/work/cms-be/shell/mysql/diaodiao_article_content.sql;
-source ~/work/cms-be/shell/mysql/diaodiao_article_gift_hint.sql;
+source ~/work/cms-be/shell/mysql/diaodiao_article_gift_hint_v2.sql;
 source ~/work/cms-be/shell/mysql/diaodiao_article_image.sql;
 source ~/work/cms-be/shell/mysql/diaodiao_article_keywords.sql;
 source ~/work/cms-be/shell/mysql/diaodiao_article_meta.sql;

@@ -114,7 +114,7 @@ class ArticleMetaTable extends Table {
             a.*,
             c.content AS text,
             g.hints AS gift,
-            g.used_for_search AS used_for_gift,
+            g.used_for_gift AS used_for_gift,
             k.keywords AS keywords,
             k.used_for_search AS used_for_search
           FROM
@@ -124,7 +124,7 @@ class ArticleMetaTable extends Table {
           ON
             a.id = c.aid
           LEFT JOIN
-            diaodiao_article_gift_hint AS g
+            diaodiao_article_gift_hint_v2 AS g
           ON
             a.id = g.aid
           LEFT JOIN
@@ -155,7 +155,7 @@ class ArticleMetaTable extends Table {
         )
         Promise.all(batch)
           .then(res => {
-            console.log('articleMetaTable 89:', res)
+            // console.log('articleMetaTable 89:', res)
             // console.log('articleMetaTable 73:', res.length)
             let [[ret]] = res
             if (ret) {
@@ -164,7 +164,7 @@ class ArticleMetaTable extends Table {
               // console.log('articleMetaTable 76:', ret)
               resolve(ret)
             } else {
-              console.log('articleMetaTable 96:', 'ret不存在。。。。。。。')
+              // console.log('articleMetaTable 96:', 'ret不存在。。。。。。。')
               resolve({})
             }
           })
@@ -194,9 +194,9 @@ class ArticleMetaTable extends Table {
       try {
         // TODO: 数据保存逻辑
         // console.log('articleMetaTable 40:', param)
-        const { id, meta, images, content, gift, keywords, tags } = param
+        let { id, meta, images, content, gift, keywords, tags } = param
         const batch = []
-        console.log('articleMetaTable 100', param)
+        // console.log('articleMetaTable 100', param)
         batch.push(
           this.exec(`UPDATE ${this.table} SET ? WHERE id=${id}`, meta)
         )
@@ -248,55 +248,76 @@ class ArticleMetaTable extends Table {
          * 2017-06-07 先下掉关键词、tag、gift
          * 因为还没有测试。。关键词、tag、gift操作在老CMS系统中进行即可
          * 上线时，解开注释....
+         * 测试通过 ...
          */
         // 插入关键词表 DONE
-        // if (!_.isEmpty(keywords)) {
-        //   // 一定要注意操作keyword表要小心，会影响线上搜索
-        //   // 如果keywords字段为空，则用默认的json代替，否则的话搜索会挂
-        //   let key = keywords.keywords || JSON.stringify({category: '', brand: '', similar: '', scene: '', special: ''})
-        //   batch.push(
-        //     this.exec(
-        //       `
-        //       INSERT INTO
-        //         diaodiao_article_keywords (aid,used_for_search,keywords)
-        //       VALUES
-        //         (${id},${keywords.used_for_search},'${key}')
-        //       ON DUPLICATE KEY
-        //       UPDATE
-        //         used_for_search = ${keywords.used_for_search}, keywords = '${key}'`
-        //     )
-        //   )
-        // }
-        // // 插入礼物表 DONE
-        // if (!_.isEmpty(gift)) {
-        //   let hints = gift.hints || JSON.stringify({relation: '', interest: '', gender: '', relation_level: '', age: '', character: '', can_as_gift: '0', scene: ''})
-        //   batch.push(
-        //     this.exec(
-        //       `
-        //       INSERT INTO
-        //         diaodiao_article_gift_hint (aid,used_for_search,hints)
-        //       VALUES
-        //         (${id},${gift.used_for_gift},'${hints}')
-        //       ON DUPLICATE KEY UPDATE
-        //         used_for_search=${gift.used_for_gift}, hints = '${hints}'
-        //     `
-        //     )
-        //   )
-        // }
-        // // 先删后插
-        // this.exec(`DELETE FROM diaodiao_article_tag_index WHERE aid = ${id}`).then(() => {
-        //   let { ctype } = meta
-        //   let tagInsertSql = `INSERT INTO diaodiao_article_tag_index (aid,tag1,tag2) VALUES `
-        //   let values = [`(${id},'page_type','${Utils.ctypeToType(ctype)}')`]
-        //   if (!_.isEmpty(tags)) {
-        //     for (let t of tags) {
-        //       values.push(`(${id},'${t.tag1}','${t.tag2}')`)
-        //     }
-        //   }
-        //   tagInsertSql += values.join(',')
-        //   Log.business(tagInsertSql)
-        //   batch.push(this.exec(tagInsertSql))
-        // })
+        if (!_.isEmpty(keywords)) {
+          let used_for_search = keywords.used_for_search
+          keywords = keywords.keywords
+          const DEFAULT_NULL_KEY = {category: '', brand: '', similar: '', scene: '', special: ''}
+          if (_.isEmpty(keywords)) {
+            keywords = DEFAULT_NULL_KEY
+          } else {
+            keywords = Object.assign(DEFAULT_NULL_KEY, JSON.parse(keywords))
+          }
+          // 一定要注意操作keyword表要小心，会影响线上搜索
+          // 如果keywords字段为空，则用默认的json代替，否则的话搜索会挂
+          let key = JSON.stringify(keywords)
+          batch.push(
+            this.exec(
+              `
+              INSERT INTO
+                diaodiao_article_keywords (aid,used_for_search,keywords)
+              VALUES
+                (${id},${used_for_search},'${key}')
+              ON DUPLICATE KEY
+              UPDATE
+                used_for_search = ${used_for_search}, keywords = '${key}'`
+            )
+          )
+        }
+        /**
+         * 插入礼物表 DONE
+         * 测试通过...
+         */
+        if (!_.isEmpty(gift)) {
+          const DEFAULT_NULL_KEY = {character: '', relation: '', scene: ''}
+          // gift是特殊搜索，所以字段名字也叫used_for_search
+          // {"relation": "", "interest": "", "gender": "", "relation_level": "", "age": "", "character": "", "can_as_gift": "0", "scene": ""}
+          let {hints, used_for_gift} = gift
+          if (_.isEmpty(hints)) {
+            hints = DEFAULT_NULL_KEY
+          } else {
+            hints = Object.assign(DEFAULT_NULL_KEY, JSON.parse(hints))
+          }
+          hints = JSON.stringify(hints)
+          batch.push(
+            this.exec(
+              `
+              INSERT INTO
+                diaodiao_article_gift_hint_v2 (aid,used_for_gift,hints)
+              VALUES
+                (${id},${used_for_gift},'${hints}')
+              ON DUPLICATE KEY UPDATE
+                used_for_gift=${used_for_gift}, hints = '${hints}'
+            `
+            )
+          )
+        }
+        // 先删后插 测试通过 ...
+        this.exec(`DELETE FROM diaodiao_article_tag_index WHERE aid = ${id}`).then(() => {
+          let { ctype } = meta
+          let tagInsertSql = `INSERT INTO diaodiao_article_tag_index (aid,tag1,tag2) VALUES `
+          let values = [`(${id},'page_type','${Utils.ctypeToType(ctype)}')`]
+          if (!_.isEmpty(tags)) {
+            for (let t of tags) {
+              values.push(`(${id},'${t.tag1}','${t.tag2}')`)
+            }
+          }
+          tagInsertSql += values.join(',')
+          Log.business(tagInsertSql)
+          batch.push(this.exec(tagInsertSql))
+        })
 
         Promise.all(batch)
           .then(res => {
