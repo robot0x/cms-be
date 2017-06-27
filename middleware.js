@@ -1,13 +1,61 @@
 const Log = require('./utils/Log')
+const UserTable = require('./db/UserTable')
+const userTable = new UserTable()
 
 module.exports = {
+  async tokenAuth (req, res, next) {
+    /**
+     * 首先判断是否是登录接口，
+     * 如果是登录接口的话，不进行处理，next
+     * 否则，取出cookie和Authentication头的值
+     * 如果有值且值在数据库中存在且不过期，则next
+     * 如果不满足上述条件，则返回 403 给前端和客户端
+     */
+    // /users/?user=liyanfeng&password=1234
+    let url = req.url
+    console.log(JSON.stringify(req.headers))
+    // 如果是登录接口，不进行token验证，直接放行即可
+    if (/\/users\/\?user=(.+?)&password=(.+)/i.test(url)) {
+      console.log('命中登录接口')
+      next()
+    } else {
+      let authenticationHeader = req.get('authentication')
+      let authenticationCookie = req.cookies.token
+      let token = authenticationCookie || authenticationHeader || ''
+      let INVALID = {
+        status: 401,
+        server_timestamp: Date.now(),
+        message: `Unauthorized: Invalid token`
+      }
+      console.log('token:', token)
+      // 401 Unauthorized - [*]：表示用户没有权限（令牌、用户名、密码错误）。
+      // 403 Forbidden - [*] 表示用户得到授权（与401错误相对），但是访问是被禁止的。
+      // token不是40位以数字和字母组合的字符串，则无需验证直接返回401即可
+      if (!/[a-z0-9]{40}/.test(token)) {
+        return res.json(INVALID)
+      } else {
+        let data = await userTable.authToken(token)
+        if (!data) {
+          res.json(INVALID)
+        } else {
+          next()
+        }
+      }
+    }
+  },
 
   allowCors (req, res, next) {
-    res.header('Access-Control-Allow-Origin', '*')
+    let { headers } = req
+    // 如果带cookie，必须不能设置为 * ，也不能设置为 a.dx2.com, b.dx2.com ... 等
+    // 只能设置为一个值
+    res.header('Access-Control-Allow-Origin', headers.origin)
     res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
     // 如果前端fetch或ajax带cookie的话，必须设置Î credentials 头为true
-    // res.header('Access-Control-Allow-Credentials', true)
-    res.header('Access-Control-Allow-Headers', 'Content-Type,Content-Length,Authorization,X-Request-With')
+    res.header('Access-Control-Allow-Credentials', true)
+    res.header(
+      'Access-Control-Allow-Headers',
+      'Content-Type,Content-Length,Authorization,X-Request-With,Cookie'
+    )
     if (req.method === 'OPTIONS') {
       res.sendStatus(200)
     } else {
@@ -19,7 +67,7 @@ module.exports = {
   bodyParse (req, res, next) {
     let data = ''
     // 取出请求数据
-    req.on('data', chunk => data += chunk) // eslint-disable-line
+    req.on("data", chunk => data += chunk); // eslint-disable-line
     req.on('end', () => {
       // 把请求数据放到request对象上的body属性中
       // GET DELETE body为一个空行
@@ -47,6 +95,7 @@ module.exports = {
   },
 
   errorHandler (err, req, res, next) {
+    console.log(err)
     // 服务端错误
     return res.json({
       status: 500,
@@ -63,5 +112,4 @@ module.exports = {
       nolog: /\.(gif|jpe?g|png|css|js)$/i // 不打印静态资源
     })
   }
-
 }

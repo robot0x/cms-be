@@ -6,6 +6,8 @@ CREATE TABLE `diaodiao_cms_user` (
   `type` tinyint(1) unsigned NOT NULL DEFAULT '1' COMMENT '作者类型，0-管理员/1-有调编辑/2-外部编辑，用来做权限控制',
   `online` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否在线，0-不在线/1-在线',
   `register_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '注册时间',
+  `login_time` timestamp NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '登录时间',
+  `token` char(40) COLLATE utf8mb4_unicode_ci DEFAULT NULL unique COMMENT '账户 + 时间戳生成的token，采用sha1加密',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='作者表';
 

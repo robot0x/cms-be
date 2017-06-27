@@ -17,7 +17,7 @@ class TagIndexTable extends Table {
 
 module.exports = TagIndexTable
 
-const tit = new TagIndexTable()
-tit.getById(1).then(data => {
-  console.log(data)
-})
+// const tit = new TagIndexTable()
+// tit.getById(1).then(data => {
+//   console.log(data)
+// })

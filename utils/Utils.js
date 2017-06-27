@@ -1,4 +1,8 @@
+const crypto = require('crypto')
 class Utils {
+  static getSha1 (text) {
+    return crypto.createHash('sha1').update(text, 'utf8').digest('HEX')
+  }
   static ctypeToType (ctype) {
     console.log('Utils.ctypeToType the ctype is ', ctype)
     ctype = Number(ctype)
@@ -112,5 +116,6 @@ class Utils {
     return extensionName
   }
 }
-
+// console.log(Utils.getSha1('李彦峰' + Date.now()))
+// console.log(Utils.getSha1('liyanfeng' + Date.now()))
 module.exports = Utils

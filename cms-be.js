@@ -1,18 +1,9 @@
 'use strict'
 const express = require('express')
 const app = express()
-const router = express.Router()
+const router = require('./router')
 const middleware = require('./middleware')
 const config = require('./package').config
-const API = require('./config/api')
-const _ = require('lodash')
-const Log = require('./utils/Log')
-const ServiceFactory = require('./service/ServiceFactory')
-// const cookieParser = require('cookie-parser')
-const serverTimestamp = Date.now()
-
-console.log('process.env.NODE_ENV:', process.env.NODE_ENV)
-
 /**
   200 OK - [GET]：服务器成功返回用户请求的数据，该操作是幂等的（Idempotent）。
   201 CREATED - [POST/PUT/PATCH]：用户新建或修改数据成功。
@@ -32,6 +23,9 @@ app.use(middleware.log())
 app.use(require('compression')())
 // 处理options请求。设置response对象的可允许跨域的header信息
 app.use(middleware.allowCors)
+app.use(require('cookie-parser')())
+// 验证登录token
+app.use(middleware.tokenAuth)
 // 解析request对象中的body数据。处理好之后放到request对象上的body属性上供后续使用。
 app.use(middleware.bodyParse)
 // bodyjson中间件必须在挂载router之前，router才能使用
@@ -44,135 +38,5 @@ app.use(middleware.errorHandler)
  * 有可能返回错误信息，但是数据库却更新成功了
  */
 // 路由级中间件
-// router.use(bodyJSON)
-router.all(/(\w+)/i, requestHandler)
-
-function requestHandler (req, res, next) {
-  // 获取请求参数
-  const action = API[req.params[0]]
-  // 返回给调用端的数据
-  const response = {
-    status: 200,
-    message: 'SUCCESS',
-    server_timestamp: serverTimestamp
-  }
-  // 如果请求的接口不存在，返回404。只有3个接口可供调用，分别是 articles/ users/ images/
-  if (!action) {
-    response.status = 404
-    response.message = 'Invalid action'
-    return res.json(response)
-  }
-
-  const body = req.body
-  if (body && !_.isEmpty(body)) {
-    response.body = body
-  }
-  // logger.info('server.js 72:', body);
-  const method = req.method.toUpperCase()
-  const paramCheck = checkArgs(action, method, body)
-  const isValid = paramCheck.isValid
-
-  if (!isValid) {
-    response.status = 400
-    response.message = `Invalid param：${paramCheck.message}`
-    // 参数不符合要求
-    return res.json(response)
-  }
-
-  // logger.info('server.js 84:', body)
-  // logger.info('server.js 85:', action)
-  /**
-   * 调用栈：
-   *  ServiceFactory -> ArticlesService.js -> ArticleContentTable.js -> DB.js
-   *  层层返回Promise，释放connection和事务处理在xxxTable.js中进行
-   */
-  const serviceFactory = new ServiceFactory(action)
-  const service = serviceFactory.getService()
-  let promise = null
-  switch (method) {
-    case 'POST': // 新增（add)
-      promise = service.create(body)
-      break
-    case 'DELETE': // 删
-      promise = service.delete(body)
-      break
-    case 'PUT': // 修改（update）
-      promise = service.update(body)
-      break
-    case 'GET': // 查
-      promise = service.list(body)
-      break
-    default:
-      response.status = 405
-      response.message = 'Invalid method'
-      res.json(response)
-  }
-
-  if (promise) {
-    promise
-      .then(result => {
-        response.res = result
-        // logger.info(result);
-        res.json(response)
-      })
-      .catch(err => {
-        Log.exception(err)
-        response.status = 500
-        response.message = `后端报错：${err}`
-        res.json(response)
-      })
-  }
-}
-
-function checkArgs (action, method, body) {
-  // console.log('action:', action)
-  // DELETE POST PUT 都需要传参数，无参数，就提示
-  if (['DELETE', 'PUT'].indexOf(method) !== -1) {
-    if (_.isEmpty(body)) {
-      return {
-        isValid: false,
-        message: '参数不能为空'
-      }
-    }
-    // DELETE PUT 由于必修要指定对那个资源进行操作，所以必须有id
-    if (body.id != null) {
-      if (!_.toInteger(body.id)) {
-        return {
-          isValid: false,
-          message: 'id格式不正确'
-        }
-      }
-    } else if (action !== 'users') {
-      return {
-        isValid: false,
-        message: '没有指定id'
-      }
-    }
-  }
-  // 如果参数中有 id 和 limit 则其类型必须是整数类型
-  if (body) {
-    if (body.id != null) {
-      if (!_.toInteger(body.id)) {
-        return {
-          isValid: false,
-          message: 'id格式不正确'
-        }
-      }
-    }
-
-    if (body.limit != null) {
-      if (!_.toInteger(body.limit)) {
-        return {
-          isValid: false,
-          message: 'limit格式不正确'
-        }
-      }
-    }
-  }
-
-  return {
-    isValid: true
-  }
-}
-
+// 视频管理
 app.listen(config.port)
