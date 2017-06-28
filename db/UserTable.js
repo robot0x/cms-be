@@ -65,16 +65,17 @@ class UserTable extends Table {
    * @memberof UserTable
    */
   async authToken (token) {
-    // 不满足格式要求，直接返回
-    if (!/[a-z0-9]{40}/.test(token)) return
     let data = await this.getByToken(token)
-    if (!Utils.isValidArray(data)) return
+    if (!Utils.isValidArray(data)) {
+      return '不存在的token'
+    }
     [data] = data
-    console.log('authToken.data:', data)
     // token不存在，直接返回
     let loginTime = new Date(data.login_time).getTime()
     // 已经到了过期时间，直接返回
-    if ((Date.now() - loginTime) / 1000 > tokenExpire) return
+    if ((Date.now() - loginTime) / 1000 > tokenExpire) {
+      return '已过期的token'
+    }
     return data
   }
   /**
@@ -107,6 +108,18 @@ class UserTable extends Table {
     // console.log('sql:', sql)
     // console.log('data:', data)
     return data
+  }
+  /**
+   * 
+   * 输入token，输出该token对应的username
+   * 
+   * @param {string} token 
+   * @memberof UserTable
+   */
+  async tokenToUsername (token) {
+    let user = await this.getByToken(token)
+    if (!Utils.isValidArray(user)) return
+    return user[0].name
   }
 
   getUserAndCount () {

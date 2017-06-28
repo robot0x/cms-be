@@ -56,7 +56,8 @@ class ArticlesService {
         time,
         type,
         author,
-        month
+        month,
+        token
       } = param
       let limitObj = null
       let promise = null
@@ -109,9 +110,9 @@ class ArticlesService {
         } else if (type === 'monthly') {
           promise = articleMetaTable.getStatisticsByMonthly()
         } else if (type === 'release') {
-          promise = articleMetaTable.release(id, user)
+          promise = articleMetaTable.release(id, token)
         } else if (type === 'lock') {
-          promise = articleMetaTable.lock(id, user)
+          promise = articleMetaTable.lock(id, token)
         }
       }
       // /articles/?offset=0&limit=2  METHOD:GET

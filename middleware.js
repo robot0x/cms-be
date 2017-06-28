@@ -25,7 +25,7 @@ module.exports = {
       let INVALID = {
         status: 401,
         server_timestamp: Date.now(),
-        message: `Unauthorized: Invalid token`
+        message: `Unauthorized: Invalid token ${token}`
       }
       console.log('token:', token)
       // 401 Unauthorized - [*]：表示用户没有权限（令牌、用户名、密码错误）。
@@ -35,9 +35,14 @@ module.exports = {
         return res.json(INVALID)
       } else {
         let data = await userTable.authToken(token)
-        if (!data) {
+        if (typeof data === 'string') {
+          INVALID.message = `${data} ${token}}`
           res.json(INVALID)
         } else {
+          // 如果token合法，则挂载到req对象上，因为后面某些接口需要用到token
+          // 用到token的接口为 lock 和 releaselock，不再采用get方式传递user的方式锁定了
+          // 这样是不安全的，前端如果改了user，则出出现一个匪夷所思的user
+          req.__token__ = token
           next()
         }
       }
@@ -85,6 +90,10 @@ module.exports = {
     const method = req.method
     if (['POST', 'PUT'].indexOf(method) !== -1) {
       try {
+        let authenticationHeader = req.get('authentication')
+        let authenticationCookie = req.cookies.token
+        let token = authenticationCookie || authenticationHeader || ''
+        console.log('bodyJSON.token:', token)
         // 如果 req.body 为 空字符串或裸字符串，则parse会出异常
         req.body = JSON.parse(req.body)
       } catch (e) {}

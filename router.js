@@ -33,10 +33,16 @@ function requestHandler (req, res, next) {
     response.message = 'Invalid action'
     return res.json(response)
   }
-
+  let token = req.__token__
+  console.log('requestHandler.token:', token)
   const body = req.body
   if (body && !_.isEmpty(body)) {
+    if (token) {
+      body.token = token
+    }
     response.body = body
+  } else if (token) {
+    response.body = { token }
   }
   // logger.info('server.js 72:', body);
   const method = req.method.toUpperCase()

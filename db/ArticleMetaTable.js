@@ -2,6 +2,8 @@ const _ = require('lodash')
 const Table = require('./Table')
 const ImageTable = require('./ImageTable')
 const imageTable = new ImageTable()
+const UserTable = require('./UserTable')
+const userTable = new UserTable()
 const ArticleContentTable = require('./ArticleContentTable')
 const articleContentTable = new ArticleContentTable()
 const TagIndexTable = require('./TagIndexTable')
@@ -44,53 +46,93 @@ class ArticleMetaTable extends Table {
     )
   }
 
-  lock (id, user) {
-    return new Promise((resolve, reject) => {
-      this.exec(`SELECT lock_by FROM ${this.table} WHERE id=${id}`)
-        .then(result => {
-          console.log('articleMetaTable lock 43', result)
-          if (this._isValidArray(result)) {
-            const { lock_by } = result[0]
-            if (lock_by) {
-              resolve({
-                lock_by
-              })
-            } else {
-              this.exec(
-                `update ${this.table} set lock_by='${user}' where id=${id}`
-              )
-                .then(result => {
-                  resolve()
-                })
-                .catch(err => {
-                  Log.exception(err)
-                  reject(err.message)
-                })
-            }
+  async lock (id, token) {
+    console.log('lock.token: ', token)
+    try {
+      let lockByMeta = await this.exec(`SELECT lock_by FROM ${this.table} WHERE id=${id}`)
+      if (Utils.isValidArray(lockByMeta)) {
+        const { lock_by } = lockByMeta[0]
+        // 如果已经被锁定了，则直接返回被锁定着的名字
+        if (lock_by) {
+          return { lock_by }
+        } else {
+          let username = await userTable.tokenToUsername(token)
+          if (username) {
+            await this.exec(`update ${this.table} set lock_by='${username}' where id=${id}`)
           } else {
-            reject()
+            return {
+              status: 401,
+              server_timestamp: Date.now(),
+              message: `Unauthorized: Invalid token ${token}`
+            }
           }
-        })
-        .catch(err => {
-          Log.exception(err)
-          reject(err.message)
-        })
-    })
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      Log.exception(error)
+    }
+    // return new Promise((resolve, reject) => {
+    //   this.exec(`SELECT lock_by FROM ${this.table} WHERE id=${id}`)
+    //     .then(result => {
+    //       console.log('articleMetaTable lock 43', result)
+    //       if (Utils.isValidArray(result)) {
+    //         const { lock_by } = result[0]
+    //         if (lock_by) {
+    //           resolve({
+    //             lock_by
+    //           })
+    //         } else {
+    //           this.exec(
+    //             `update ${this.table} set lock_by='${user}' where id=${id}`
+    //           )
+    //             .then(result => {
+    //               resolve()
+    //             })
+    //             .catch(err => {
+    //               Log.exception(err)
+    //               reject(err.message)
+    //             })
+    //         }
+    //       } else {
+    //         reject()
+    //       }
+    //     })
+    //     .catch(err => {
+    //       Log.exception(err)
+    //       reject(err.message)
+    //     })
+    // })
   }
 
-  release (id, user) {
-    return new Promise((resolve, reject) => {
-      this.exec(
-        `UPDATE ${this.table} set lock_by='' where id=${id} and lock_by='${user}'`
-      )
-        .then(result => {
-          resolve()
-        })
-        .catch(err => {
-          Log.exception(err)
-          reject(err.message)
-        })
-    })
+  async release (id, token) {
+    try {
+      let username = await userTable.tokenToUsername(token)
+      if (username) {
+        await this.exec(`UPDATE ${this.table} set lock_by='' where id=${id} and lock_by='${username}'`)
+      } else {
+        return {
+          status: 401,
+          server_timestamp: Date.now(),
+          message: `Unauthorized: Invalid token ${token}`
+        }
+      }
+    } catch (error) {
+      Log.exception(error)
+      console.log(error)
+    }
+    // return new Promise((resolve, reject) => {
+    //   this.exec(
+    //     `UPDATE ${this.table} set lock_by='' where id=${id} and lock_by='${user}'`
+    //   )
+    //     .then(result => {
+    //       resolve()
+    //     })
+    //     .catch(err => {
+    //       Log.exception(err)
+    //       reject(err.message)
+    //     })
+    // })
   }
   /**
    * @param {number} id
@@ -180,9 +222,6 @@ class ArticleMetaTable extends Table {
     })
   }
 
-  _isValidArray (arr) {
-    return arr && Array.isArray(arr) && arr.length > 0
-  }
   /**
    * @param {object} param
    * @returns promise
@@ -212,7 +251,7 @@ class ArticleMetaTable extends Table {
           )
         )
 
-        if (this._isValidArray(images)) {
+        if (Utils.isValidArray(images)) {
           // tid url type origin_filename extension_name size width height
 
           // const bulks = []
