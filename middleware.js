@@ -61,6 +61,9 @@ module.exports = {
       'Access-Control-Allow-Headers',
       'Content-Type,Content-Length,Authorization,X-Request-With,Cookie'
     )
+    // 缓存options，设置这个头，第一次会发options，在过期时间之内不会再发送options
+    // http://www.tuicool.com/articles/3MbYbiF
+    // res.header('Access-Control-Max-Age', 3600)
     if (req.method === 'OPTIONS') {
       res.sendStatus(200)
     } else {
