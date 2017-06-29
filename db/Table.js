@@ -31,6 +31,7 @@ class Table {
     if (!param.title) {
       param.title = title
     }
+    delete param.token
     return this.exec(`INSERT INTO diaodiao_article_meta SET ?`, param)
   }
 

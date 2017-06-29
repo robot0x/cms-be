@@ -6,7 +6,21 @@ const Log = require('./utils/Log')
 const ServiceFactory = require('./service/ServiceFactory')
 // const cookieParser = require('cookie-parser')
 const serverTimestamp = Date.now()
-
+const AliVideoService = require('./service/AliVideoService')
+const aliVideoService = new AliVideoService()
+// 客户端请求上传token
+router.get('/vid/token', (req, res, next) => {
+  console.log('视频管理相关接口命中 ...')
+  aliVideoService.genUploadToken
+  res.json({
+    status: 200,
+    server_timestamp: Date.now(),
+    message: 'SUCCESS',
+    res: {
+      token: aliVideoService.genUploadToken()
+    }
+  })
+})
 // 视频管理相关接口
 router.get('/vid/query/person/', (req, res, next) => {
   console.log('视频管理相关接口命中 ...')

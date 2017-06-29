@@ -1,6 +1,8 @@
 const crypto = require('crypto')
 class Utils {
   static getSha1 (text) {
+    // http://www.nodeclass.com/articles/63795
+    // return crypto.createHmac('sha1', key).update(text, 'utf8').digest('HEX')
     return crypto.createHash('sha1').update(text, 'utf8').digest('HEX')
   }
   static ctypeToType (ctype) {
