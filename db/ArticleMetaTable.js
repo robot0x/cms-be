@@ -276,6 +276,8 @@ class ArticleMetaTable extends Table {
             let imageSQL = `UPDATE ${imageTable.table} SET used=${image.used}, type='${image.type}' WHERE id=${id}`
             if (!id) {
               delete image.id
+              // remove掉协议头
+              image.url = Utils.removeProtocolHead(image.url)
               imageSQL = `INSERT ${imageTable.table} SET ?`
             }
             console.log('articleMetaTable 143:', imageSQL)
@@ -291,7 +293,7 @@ class ArticleMetaTable extends Table {
          */
         // 插入关键词表 DONE
         if (!_.isEmpty(keywords)) {
-          let used_for_search = keywords.used_for_search
+          let {used_for_search} = keywords
           keywords = keywords.keywords
           const DEFAULT_NULL_KEY = {category: '', brand: '', similar: '', scene: '', special: ''}
           if (_.isEmpty(keywords)) {

@@ -5,6 +5,34 @@ class Utils {
     // return crypto.createHmac('sha1', key).update(text, 'utf8').digest('HEX')
     return crypto.createHash('sha1').update(text, 'utf8').digest('HEX')
   }
+  /**
+   * 判断一个url是否包含 形如 http:// or https:// or // 协议头
+   */
+  static hasProtocol (url) {
+    return url && Utils.HTTP_PROTOCOL_REG.test(url)
+  }
+   /**
+   * 输入形如：
+   *  1. //content.image.alimmdn.com/cms/sites/default/files/20160122/experience/kk.jpg
+   *  2. http://content.image.alimmdn.com/cms/sites/default/files/20141014/firstpage/coffeelast.jpg
+   *  3. https://content.image.alimmdn.com/cms/sites/default/files/20150120/experience/0_0.jpg
+   * 输出：
+   *  1. content.image.alimmdn.com/cms/sites/default/files/20160122/experience/kk.jpg
+   *  2. content.image.alimmdn.com/cms/sites/default/files/20141014/firstpage/coffeelast.jpg
+   *  3. content.image.alimmdn.com/cms/sites/default/files/20150120/experience/0_0.jpg
+   */
+  static removeProtocolHead (url) {
+    try {
+      // 如果url不存在或者不是以 http:// or https:// or // 开头，则直接返回url
+      if (!Utils.hasProtocol(url)) {
+        return url
+      }
+      url = url.replace(Utils.HTTP_PROTOCOL_REG, '')
+      return url
+    } catch (e) {
+      return url
+    }
+  }
   static ctypeToType (ctype) {
     console.log('Utils.ctypeToType the ctype is ', ctype)
     ctype = Number(ctype)
@@ -118,6 +146,11 @@ class Utils {
     return extensionName
   }
 }
+Utils.HTTP_PROTOCOL_REG = /^(https?:)?\/\//i
+// console.log(Utils.removeProtocolHead('content.image.alimmdn.com/cms/10527/149905160587782118703051.jpg'))
+// console.log(Utils.removeProtocolHead('http://content.image.alimmdn.com/cms/10527/149905160587782118703051.jpg'))
+// console.log(Utils.removeProtocolHead('//content.image.alimmdn.com/cms/10527/149905160587782118703051.jpg'))
+// console.log(Utils.removeProtocolHead('https://content.image.alimmdn.com/cms/10527/149905160587782118703051.jpg'))
 // console.log(Utils.getSha1('李彦峰' + Date.now()))
 // console.log(Utils.getSha1('liyanfeng' + Date.now()))
 module.exports = Utils
