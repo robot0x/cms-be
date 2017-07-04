@@ -253,7 +253,6 @@ class ArticleMetaTable extends Table {
 
         if (Utils.isValidArray(images)) {
           // tid url type origin_filename extension_name size width height
-
           // const bulks = []
           // let cols = Object.keys(images[0])
           // console.log('articleMetaTable 58:', cols);
@@ -268,10 +267,14 @@ class ArticleMetaTable extends Table {
           // batch.push(this.exec(`INSERT INTO ${imageTable.table} (${cols}) VALUES ?`, [bulks]))
           // batch.push(this.exec(`INSERT INTO ${imageTable.table} (aid,url,type,used,origin_filename,extension_name,size,width,height) VALUES ?`, [bulks]))
           // 需要根据上传的image是否有id来确定是UPDATE或INSERT
+          let imageIds = []
           for (const image of images) {
             const { id } = image
+            if (id) {
+              imageIds.push(id)
+              if (!image.isModify) continue
+            }
             // 如果图片不是新上传的且没有任何修改，就无需执行任何sql
-            if (id && !image.isModify) continue
             delete image.isModify
             let imageSQL = `UPDATE ${imageTable.table} SET used=${image.used}, type='${image.type}' WHERE id=${id}`
             if (!id) {
@@ -282,6 +285,11 @@ class ArticleMetaTable extends Table {
             }
             console.log('articleMetaTable 143:', imageSQL)
             batch.push(this.exec(imageSQL, image))
+          }
+          // 如果在界面上删除了图片，则需要把数据库中的数据也一同删除掉
+          if (imageIds.length > 0) {
+            let deleteImageSQL = `DELETE FROM ${imageTable.table} WHERE id NOT IN (${imageIds.join(',')})`
+            batch.push(this.exec(deleteImageSQL))
           }
         }
 
