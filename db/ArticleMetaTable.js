@@ -534,7 +534,7 @@ class ArticleMetaTable extends Table {
         .create(param)
         .then(result => {
           resolve({
-            id: result.INSERTId
+            id: result.insertId
           })
         })
         .catch(err => {

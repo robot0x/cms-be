@@ -1,5 +1,5 @@
-const URLSafeBase64 = require('urlsafe-base64')
-const crypto = require('crypto')
+// const URLSafeBase64 = require('urlsafe-base64')
+// const crypto = require('crypto')
 class AliVideoService {
   // var wantu = new WANTU('23108204','83908ed2f09d278edd6152bfb6002fb9');  //填入ak，sk
   // var namespace = 'content';   //填写空间名
