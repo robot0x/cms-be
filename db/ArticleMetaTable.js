@@ -288,7 +288,9 @@ class ArticleMetaTable extends Table {
           }
           // 如果在界面上删除了图片，则需要把数据库中的数据也一同删除掉
           if (imageIds.length > 0) {
-            let deleteImageSQL = `DELETE FROM ${imageTable.table} WHERE id NOT IN (${imageIds.join(',')})`
+            // let deleteImageSQL = `DELETE FROM ${imageTable.table} WHERE id NOT IN (${imageIds.join(',')})`
+            // 发现了一个大BUG，删除了其他文章的图片，数据库中将近100万张图片被我删除光了
+            let deleteImageSQL = `DELETE FROM ${imageTable.table} WHERE aid = ${id} AND id NOT IN (${imageIds.join(',')})`
             batch.push(this.exec(deleteImageSQL))
           }
         }
