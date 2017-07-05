@@ -244,10 +244,10 @@ class ArticleMetaTable extends Table {
             `INSERT INTO
               ${articleContentTable.table} (${articleContentTable.columnsStr})
             VALUES
-              (${id}, '${content}')
+              (${id}, ${articleContentTable.escape(content)})
             ON DUPLICATE KEY
             UPDATE
-              content = '${content}'`
+              content = ${articleContentTable.escape(content)}`
           )
         )
 

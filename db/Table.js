@@ -22,7 +22,9 @@ class Table {
     this.orderByCol = orderByCol
     this.db = db
   }
-
+  escape (str) {
+    return this.db.escape(str)
+  }
   create (param) {
     const title = '新建文章'
     if (!param || _.isEmpty(param)) {
