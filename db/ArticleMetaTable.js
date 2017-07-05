@@ -240,8 +240,8 @@ class ArticleMetaTable extends Table {
           this.exec(`UPDATE ${this.table} SET ? WHERE id=${id}`, meta)
         )
         if ((content || '').indexOf('�') !== -1) {
-          Log.exception('发现有问号的文章，post过来的内容为：', content)
-          console.log('发现有问号的文章，post过来的内容为：', content)
+          Log.exception('发现有问号�的文章，post过来的内容为：', content)
+          console.log('发现有问号的�文章，post过来的内容为：', content)
         }
         batch.push(
           this.exec(
