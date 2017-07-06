@@ -80,6 +80,9 @@ module.exports = {
       // 把请求数据放到request对象上的body属性中
       // GET DELETE body为一个空行
       req.body = data
+      if (data.indexOf('�') !== -1) {
+        console.log('发现有问号的�文章，post过来的内容为：', data)
+      }
       // if (data && req.body) {
       //   // console.log('cms 228:', req.body)
       //   varLogger.info(`[parseBody function] the data is ${req.body}`)
