@@ -79,6 +79,7 @@ module.exports = {
    */
   bodyParse (req, res, next) {
     let data = ''
+    req.setEncoding('utf8')
     // 取出请求数据
     req.on("data", chunk => data += chunk); // eslint-disable-line
     req.on('end', () => {
@@ -115,13 +116,15 @@ module.exports = {
     next() // 没有这一行，所有接口都会hang住
   },
 
-  queryAsBody (req, res, next) {
-    let query = req.query
-    if (query) {
-      req.body = Object.assign(req.body || {}, query)
-    }
-    next()
-  },
+  // queryAsBody (req, res, next) {
+  //   let query = req.query
+  //   console.log('[queryAsBody] query:', query)
+  //   console.log('[queryAsBody] body:', req.body)
+  //   if (!_.isEmpty(query)) {
+  //     req.body = Object.assign((req.body || {}), query)
+  //   }
+  //   next()
+  // },
 
   errorHandler (err, req, res, next) {
     console.log(err)

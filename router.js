@@ -30,6 +30,7 @@ function requestHandler (req, res, next) {
   let token = req.__token__
   console.log(`${req.url}requestHandler.token:`, token)
   const body = req.body
+  console.log(`${req.url}requestHandler.body:`, body)
   if (body && !_.isEmpty(body)) {
     if (token) {
       body.token = token
