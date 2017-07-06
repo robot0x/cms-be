@@ -12,7 +12,7 @@ const aliVideoService = new AliVideoService()
 // CMS后台相关restful接口
 router.all(/(\w+)/i, requestHandler)
 function requestHandler (req, res, next) {
-  console.log('CMS后台相关restful接口命中 ...，params:', req.params)
+  // console.log('CMS后台相关restful接口命中 ...，params:', req.params)
   // 获取请求参数
   const action = API[req.params[0]]
   // 返回给调用端的数据
@@ -30,7 +30,7 @@ function requestHandler (req, res, next) {
   let token = req.__token__
   console.log(`${req.url}requestHandler.token:`, token)
   const body = req.body
-  console.log(`${req.url}requestHandler.body:`, body)
+  // console.log(`${req.url}requestHandler.body:`, body)
   if (body && !_.isEmpty(body)) {
     if (token) {
       body.token = token
