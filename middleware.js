@@ -1,7 +1,22 @@
 const Log = require('./utils/Log')
 const UserTable = require('./db/UserTable')
 const userTable = new UserTable()
-
+const getCharset = req => {
+  let charset = ''
+  if (!req) return charset
+  let contentType = null
+  if (typeof req === 'string') {
+    contentType = req
+  } else {
+    contentType = req.headers['content-type']
+  }
+  if (!contentType) return charset
+  const charsetReg = /; *charset=(.+)/i
+  const match = contentType.match(charsetReg)
+  if (!match) return charset
+  charset = match[1]
+  return charset.trim().toLowerCase()
+}
 module.exports = {
   async tokenAuth (req, res, next) {
     /**
@@ -70,33 +85,56 @@ module.exports = {
       next()
     }
   },
-
   /**
    * @param {object} req
    * @param {object} res
    * @param {function} next
    * 这个中间件只能解析实体内容，不能解析params
+   * 会出现�bug
+   * http://apps.timwhitlock.info/unicode/inspect?s=%EF%BF%BD
+   * https://stackoverflow.com/questions/26580265/nodejs-dealing-with-characters-encoding
+   * https://www.npmjs.com/package/iconv-lite
    */
   bodyParse (req, res, next) {
-    let data = ''
-    req.setEncoding('utf8')
-    // 取出请求数据
-    req.on("data", chunk => data += chunk); // eslint-disable-line
+    const charset = getCharset(req) || 'utf8'
+    // 很奇怪，提前设置charset会报错
+    // req.setEncoding(charset)
+    const chunks = []
+    let totalLength = 0
+    req.on('data', chunk => {
+      // console.log('typeof chunk:', typeof chunk)
+      // console.log('instanceof Buffer:', chunk instanceof Buffer)
+      // console.log('chunk.toString:', chunk.toString())
+      chunks.push(chunk)
+      totalLength += chunk.length
+    })
     req.on('end', () => {
-      // 把请求数据放到request对象上的body属性中
-      // GET DELETE body为一个空行
+      const data = Buffer.concat(chunks, totalLength).toString(charset)
       req.body = data
-      console.log(`[bodyParse] ${req.url} data:`, data)
-      if (data.indexOf('�') !== -1) {
-        console.log('[bodyParse]发现有问号的�文章，post过来的内容为：', data)
-      }
-      // if (data && req.body) {
-      //   // console.log('cms 228:', req.body)
-      //   varLogger.info(`[parseBody function] the data is ${req.body}`)
-      // }
       next()
     })
   },
+
+  // bodyParse (req, res, next) {
+  //   let data = ''
+  //   req.setEncoding('utf8')
+  //   // 取出请求数据
+  //   req.on("data", chunk => data += chunk); // eslint-disable-line
+  //   req.on('end', () => {
+  //     // 把请求数据放到request对象上的body属性中
+  //     // GET DELETE body为一个空行
+  //     req.body = data
+  //     // console.log(`[bodyParse] ${req.url} data:`, data)
+  //     if (data.indexOf('�') !== -1) {
+  //       console.log(`[bodyParse]发现有问号的�文章，${req.url} post过来的内容为：`, data)
+  //     }
+  //     // if (data && req.body) {
+  //     //   // console.log('cms 228:', req.body)
+  //     //   varLogger.info(`[parseBody function] the data is ${req.body}`)
+  //     // }
+  //     next()
+  //   })
+  // },
 
   // 请求数据parse
   bodyJSON (req, res, next) {

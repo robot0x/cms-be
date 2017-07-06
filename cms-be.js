@@ -4,6 +4,7 @@ const app = express()
 const router = require('./router')
 const middleware = require('./middleware')
 const config = require('./package').config
+const timeout = require('connect-timeout')
 /**
   200 OK - [GET]：服务器成功返回用户请求的数据，该操作是幂等的（Idempotent）。
   201 CREATED - [POST/PUT/PATCH]：用户新建或修改数据成功。
@@ -18,6 +19,7 @@ const config = require('./package').config
   422 Unprocesable entity - [POST/PUT/PATCH] 当创建一个对象时，发生一个验证错误。
   500 INTERNAL SERVER ERROR - [*]：服务器发生错误，用户将无法判断发出的请求是否成功。
  */
+app.use(timeout(20000))
 app.use(middleware.log())
 // 处理options请求。设置response对象的可允许跨域的header信息
 app.use(middleware.allowCors)
