@@ -19,10 +19,10 @@ const config = require('./package').config
   500 INTERNAL SERVER ERROR - [*]：服务器发生错误，用户将无法判断发出的请求是否成功。
  */
 app.use(middleware.log())
-// 启动压缩 -- 系统级中间件
-app.use(require('compression')())
 // 处理options请求。设置response对象的可允许跨域的header信息
 app.use(middleware.allowCors)
+// 启动压缩 -- 系统级中间件
+// app.use(require('compression')())
 app.use(require('cookie-parser')())
 // 验证登录token
 app.use(middleware.tokenAuth)

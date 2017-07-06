@@ -81,7 +81,7 @@ module.exports = {
       // GET DELETE body为一个空行
       req.body = data
       if (data.indexOf('�') !== -1) {
-        console.log('发现有问号的�文章，post过来的内容为：', data)
+        console.log('[bodyParse]发现有问号的�文章，post过来的内容为：', data)
       }
       // if (data && req.body) {
       //   // console.log('cms 228:', req.body)
