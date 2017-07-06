@@ -71,7 +71,12 @@ module.exports = {
     }
   },
 
-  // 处理request请求数据
+  /**
+   * @param {object} req
+   * @param {object} res
+   * @param {function} next
+   * 这个中间件只能解析实体内容，不能解析params
+   */
   bodyParse (req, res, next) {
     let data = ''
     // 取出请求数据
@@ -80,6 +85,7 @@ module.exports = {
       // 把请求数据放到request对象上的body属性中
       // GET DELETE body为一个空行
       req.body = data
+      console.log(`[bodyParse] ${req.url} data:`, data)
       if (data.indexOf('�') !== -1) {
         console.log('[bodyParse]发现有问号的�文章，post过来的内容为：', data)
       }
@@ -96,10 +102,10 @@ module.exports = {
     const method = req.method
     if (['POST', 'PUT'].indexOf(method) !== -1) {
       try {
-        let authenticationHeader = req.get('authentication')
-        let authenticationCookie = req.cookies.token
-        let token = authenticationCookie || authenticationHeader || ''
-        console.log('bodyJSON.token:', token)
+        // let authenticationHeader = req.get('authentication')
+        // let authenticationCookie = req.cookies.token
+        // let token = authenticationCookie || authenticationHeader || ''
+        // console.log('bodyJSON.token:', token)
         // 如果 req.body 为 空字符串或裸字符串，则parse会出异常
         req.body = JSON.parse(req.body)
       } catch (e) {}
@@ -107,6 +113,14 @@ module.exports = {
       req.body = req.query
     }
     next() // 没有这一行，所有接口都会hang住
+  },
+
+  queryAsBody (req, res, next) {
+    let query = req.query
+    if (query) {
+      req.body = Object.assign(req.body || {}, query)
+    }
+    next()
   },
 
   errorHandler (err, req, res, next) {

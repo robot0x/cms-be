@@ -8,31 +8,11 @@ const ServiceFactory = require('./service/ServiceFactory')
 const serverTimestamp = Date.now()
 const AliVideoService = require('./service/AliVideoService')
 const aliVideoService = new AliVideoService()
-// 客户端请求上传token
-router.get('/vid/token', (req, res, next) => {
-  console.log('视频管理相关接口命中 ...')
-  aliVideoService.genUploadToken
-  res.json({
-    status: 200,
-    server_timestamp: Date.now(),
-    message: 'SUCCESS',
-    res: {
-      token: aliVideoService.genUploadToken()
-    }
-  })
-})
-// 视频管理相关接口
-router.get('/vid/query/person/', (req, res, next) => {
-  console.log('视频管理相关接口命中 ...')
-  res.json({
-    hello: 'hello'
-  })
-})
 
 // CMS后台相关restful接口
 router.all(/(\w+)/i, requestHandler)
 function requestHandler (req, res, next) {
-  console.log('CMS后台相关restful接口命中 ...')
+  console.log('CMS后台相关restful接口命中 ...，params:', req.params)
   // 获取请求参数
   const action = API[req.params[0]]
   // 返回给调用端的数据
@@ -48,7 +28,7 @@ function requestHandler (req, res, next) {
     return res.json(response)
   }
   let token = req.__token__
-  console.log('requestHandler.token:', token)
+  console.log(`${req.url}requestHandler.token:`, token)
   const body = req.body
   if (body && !_.isEmpty(body)) {
     if (token) {
@@ -165,4 +145,26 @@ function checkArgs (action, method, body) {
     isValid: true
   }
 }
+
+// 客户端请求上传token
+router.get('/vid/token', (req, res, next) => {
+  console.log('视频管理相关接口命中 ...')
+  aliVideoService.genUploadToken
+  res.json({
+    status: 200,
+    server_timestamp: Date.now(),
+    message: 'SUCCESS',
+    res: {
+      token: aliVideoService.genUploadToken()
+    }
+  })
+})
+// 视频管理相关接口
+router.get('/vid/query/person/', (req, res, next) => {
+  console.log('视频管理相关接口命中 ...')
+  res.json({
+    hello: 'hello'
+  })
+})
+
 module.exports = router

@@ -4,6 +4,7 @@ const app = express()
 const router = require('./router')
 const middleware = require('./middleware')
 const config = require('./package').config
+const bodyParser = require('body-parser')
 /**
   200 OK - [GET]：服务器成功返回用户请求的数据，该操作是幂等的（Idempotent）。
   201 CREATED - [POST/PUT/PATCH]：用户新建或修改数据成功。
@@ -19,17 +20,20 @@ const config = require('./package').config
   500 INTERNAL SERVER ERROR - [*]：服务器发生错误，用户将无法判断发出的请求是否成功。
  */
 app.use(middleware.log())
-// 处理options请求。设置response对象的可允许跨域的header信息
-app.use(middleware.allowCors)
-// 启动压缩 -- 系统级中间件
-// app.use(require('compression')())
 app.use(require('cookie-parser')())
 // 验证登录token
 app.use(middleware.tokenAuth)
-// 解析request对象中的body数据。处理好之后放到request对象上的body属性上供后续使用。
-app.use(middleware.bodyParse)
-// bodyjson中间件必须在挂载router之前，router才能使用
-app.use(middleware.bodyJSON)
+// 启动压缩 -- 系统级中间件
+// 处理options请求。设置response对象的可允许跨域的header信息
+app.use(middleware.allowCors)
+app.use(require('compression')())
+// app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
+app.use(middleware.queryAsBody)
+// // 解析request对象中的body数据。处理好之后放到request对象上的body属性上供后续使用。
+// app.use(middleware.bodyParse)
+// // bodyjson中间件必须在挂载router之前，router才能使用
+// app.use(middleware.bodyJSON)
 // 把路由挂载至应用 不以根目录开始，以根目录下的 cms 目录作为路由中间件的开始匹配位置
 app.use(`/${config.root}`, router)
 // 错误处理中间件
