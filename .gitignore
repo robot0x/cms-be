@@ -2,5 +2,6 @@
 node_modules/
 test/*
 logs/*
+*.php
 npm-debug.log
 selenium-debug.log

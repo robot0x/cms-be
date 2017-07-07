@@ -9,6 +9,33 @@ const serverTimestamp = Date.now()
 const AliVideoService = require('./service/AliVideoService')
 const aliVideoService = new AliVideoService()
 
+// 路由顺序跟书写顺序是一致的
+router.get('/vid/callback/rawupdate', (req, res, next) => {
+  console.log('上传回调接口被命中 ...')
+  console.log('百川返回的数据：', req.body)
+  next()
+})
+// 客户端请求上传token
+router.get('/vid/token', (req, res, next) => {
+  console.log('视频管理相关接口命中 ...')
+  aliVideoService.genUploadToken
+  res.json({
+    status: 200,
+    server_timestamp: Date.now(),
+    message: 'SUCCESS',
+    res: {
+      token: aliVideoService.genUploadToken()
+    }
+  })
+})
+// 视频管理相关接口
+router.get('/vid/query/person/', (req, res, next) => {
+  console.log('视频管理相关接口命中 ...')
+  res.json({
+    hello: 'hello'
+  })
+})
+
 // CMS后台相关restful接口
 router.all(/(\w+)/i, requestHandler)
 function requestHandler (req, res, next) {
@@ -147,25 +174,6 @@ function checkArgs (action, method, body) {
   }
 }
 
-// 客户端请求上传token
-router.get('/vid/token', (req, res, next) => {
-  console.log('视频管理相关接口命中 ...')
-  aliVideoService.genUploadToken
-  res.json({
-    status: 200,
-    server_timestamp: Date.now(),
-    message: 'SUCCESS',
-    res: {
-      token: aliVideoService.genUploadToken()
-    }
-  })
-})
-// 视频管理相关接口
-router.get('/vid/query/person/', (req, res, next) => {
-  console.log('视频管理相关接口命中 ...')
-  res.json({
-    hello: 'hello'
-  })
-})
+
 
 module.exports = router
