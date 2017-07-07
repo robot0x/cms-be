@@ -239,10 +239,6 @@ class ArticleMetaTable extends Table {
         batch.push(
           this.exec(`UPDATE ${this.table} SET ? WHERE id=${id}`, meta)
         )
-        if ((content || '').indexOf('�') !== -1) {
-          // Log.exception('[]发现有问号�的文章，post过来的内容为：', content)
-          console.log('[updateAll]发现有问号的�文章，post过来的内容为：', content)
-        }
         batch.push(
           this.exec(
             `INSERT INTO
@@ -294,8 +290,8 @@ class ArticleMetaTable extends Table {
           if (imageIds.length > 0) {
             // let deleteImageSQL = `DELETE FROM ${imageTable.table} WHERE id NOT IN (${imageIds.join(',')})`
             // 发现了一个大BUG，删除了其他文章的图片，数据库中将近100万张图片被我删除光了
-            let deleteImageSQL = `DELETE FROM ${imageTable.table} WHERE aid = ${id} AND id NOT IN (${imageIds.join(',')})`
-            batch.push(this.exec(deleteImageSQL))
+            // let deleteImageSQL = `DELETE FROM ${imageTable.table} WHERE aid = ${id} AND id NOT IN (${imageIds.join(',')})`
+            // batch.push(this.exec(deleteImageSQL))
           }
         }
 
