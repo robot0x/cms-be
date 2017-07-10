@@ -267,8 +267,10 @@ class ArticleMetaTable extends Table {
           // batch.push(this.exec(`INSERT INTO ${imageTable.table} (${cols}) VALUES ?`, [bulks]))
           // batch.push(this.exec(`INSERT INTO ${imageTable.table} (aid,url,type,used,origin_filename,extension_name,size,width,height) VALUES ?`, [bulks]))
           // 需要根据上传的image是否有id来确定是UPDATE或INSERT
+          console.log('[updateAll]要保存的图片为：', images)
           let imageIds = []
           for (const image of images) {
+            console.log('[updateAll]进入循环....')
             const { id } = image
             if (id) {
               imageIds.push(id)
@@ -283,16 +285,17 @@ class ArticleMetaTable extends Table {
               image.url = Utils.removeProtocolHead(image.url)
               imageSQL = `INSERT ${imageTable.table} SET ?`
             }
-            console.log('articleMetaTable 143:', imageSQL)
+            console.log('[updateAll]图片的sql语句为：', imageSQL)
             batch.push(this.exec(imageSQL, image))
           }
-          // 如果在界面上删除了图片，则需要把数据库中的数据也一同删除掉
-          if (imageIds.length > 0) {
-            // let deleteImageSQL = `DELETE FROM ${imageTable.table} WHERE id NOT IN (${imageIds.join(',')})`
-            // 发现了一个大BUG，删除了其他文章的图片，数据库中将近100万张图片被我删除光了
-            // let deleteImageSQL = `DELETE FROM ${imageTable.table} WHERE aid = ${id} AND id NOT IN (${imageIds.join(',')})`
-            // batch.push(this.exec(deleteImageSQL))
-          }
+          // // 如果在界面上删除了图片，则需要把数据库中的数据也一同删除掉
+          // if (imageIds.length > 0) {
+          //   // let deleteImageSQL = `DELETE FROM ${imageTable.table} WHERE id NOT IN (${imageIds.join(',')})`
+          //   // 发现了一个大BUG，删除了其他文章的图片，数据库中将近100万张图片被我删除光了
+          //   let deleteImageSQL = `DELETE FROM ${imageTable.table} WHERE aid = ${id} AND id NOT IN (${imageIds.join(',')})`
+          //   console.log('deleteImageSQL:', deleteImageSQL)
+          //   batch.push(this.exec(deleteImageSQL))
+          // }
         }
 
         /**
