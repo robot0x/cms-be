@@ -52,7 +52,7 @@ class Table {
             // connection.commit()
           })
           .catch(err => {
-            Log.exception(sql + err)
+            Log.exception(sql + JSON.stringify(data) + err)
             reject(err)
             // connection.rollback()
             // runLogger.error(err)
