@@ -58,7 +58,7 @@ class ArticleMetaTable extends Table {
         } else {
           let username = await userTable.tokenToUsername(token)
           if (username) {
-            await this.exec(`update ${this.table} set lock_by='${username}' where id=${id}`)
+            await this.exec(`UPDATE ${this.table} SET lock_by='${username}' WHERE id=${id}`)
           } else {
             return {
               status: 401,

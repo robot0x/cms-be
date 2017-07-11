@@ -22,8 +22,10 @@ class ArticlesService {
       let promise = null
       console.log('ArticlesService varLogger24', type)
       if (type === 'all') {
+        console.log('type === all ....')
         promise = articleMetaTable.updateAll(param)
       } else {
+        console.log('type !== all ....')
         promise = articleMetaTable.update(param)
       }
       return promise
