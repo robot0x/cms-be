@@ -34,6 +34,7 @@ class Table {
       param.title = title
     }
     delete param.token
+    console.log('CREATE 方法执行 .....')
     return this.exec(`INSERT INTO diaodiao_article_meta SET ?`, param)
   }
 
