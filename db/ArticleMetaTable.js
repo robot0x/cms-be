@@ -234,6 +234,8 @@ class ArticleMetaTable extends Table {
         // TODO: 数据保存逻辑
         // console.log('articleMetaTable 40:', param)
         let { id, meta, images, content, gift, keywords, tags } = param
+        console.log('[updateAll]接收到的参数为：', param)
+        console.log('[updateAll]要保存的图片为：', images)
         const batch = []
         // console.log('articleMetaTable 100', param)
         batch.push(
