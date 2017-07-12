@@ -229,7 +229,7 @@ class ArticleMetaTable extends Table {
    * 在Edit.vue中，点击“保存”执行该方法
    */
   updateAll (param) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try {
         // TODO: 数据保存逻辑
         // console.log('articleMetaTable 40:', param)
@@ -252,53 +252,81 @@ class ArticleMetaTable extends Table {
               content = ${articleContentTable.escape(content)}`
           )
         )
-
-        if (Utils.isValidArray(images)) {
-          // tid url type origin_filename extension_name size width height
-          // const bulks = []
-          // let cols = Object.keys(images[0])
-          // console.log('articleMetaTable 58:', cols);
-          // for(const image of images){
-          //   bulks.push(_.values(image))
-          // }
-          // TODO:这块儿需要修改，由于是异步的，
-          // 不能执行先删后插的操作，删除可能在插入之后执行
-          // 不要信任异步操作的顺序
-          // batch.push(this.exec(`DELETE FROM ${imageTable.table} where aid=${id}`))
-          // console.log('articleMetaTable 124', cols)
-          // batch.push(this.exec(`INSERT INTO ${imageTable.table} (${cols}) VALUES ?`, [bulks]))
-          // batch.push(this.exec(`INSERT INTO ${imageTable.table} (aid,url,type,used,origin_filename,extension_name,size,width,height) VALUES ?`, [bulks]))
-          // 需要根据上传的image是否有id来确定是UPDATE或INSERT
+        let [rs] = await this.exec(`SELECT count(id) AS count FROM ${imageTable.table} where aid=${id}`)
+        if (Utils.isValidArray(images) && (images.some(image => image.isModify === 1) || rs.count !== images.length)) {
+          // 先删除，后插入
+          await this.exec(`DELETE FROM ${imageTable.table} where aid=${id}`)
           console.log('[updateAll]要保存的图片为：', images)
-          let imageIds = []
+          // let imageIds = []
+          // `aid`, // int(11) unsigned NOT NULL COMMENT '文章的id',
+          // `url`, // varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT '' COMMENT '图片url',
+          // `used`, // tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT '是否被使用。0-未被使用/1-被使用',
+          // `type`, // smallint unsigned COMMENT '图片的类型。''0未设置类型（没有被使用/第1位-内容图(1)/第2位cover图(2)/第3位coverex图(4)/第4位thumb图(8)/第5位swipe图(16)/第6位banner图(32)',
+          // `origin_filename`, // varchar(32) DEFAULT '' COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '上传时的文件名',
+          // `extension_name`, // varchar(10) DEFAULT '' COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '图片扩展名，jpg/jpeg/png/gif...',
+          // `size`, // int unsigned NOT NULL DEFAULT 0 COMMENT '图片尺寸。单位为byte',
+          // `width`, // smallint(4) unsigned NOT NULL DEFAULT 0 COMMENT '上传时的原始宽度。单位为px',
+          // `height`, // smallint(4) unsigned NOT NULL DEFAULT 0 COMMENT '上传时的原始高度。单位为px',
+          // `alt`, // varchar(32) DEFAULT '' COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'img的alt属性',
+          // `title`, // varchar(32) DEFAULT '' COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'img的title属性',
+          let insertImageSQL = `INSERT INTO ${imageTable.table}(aid,url,used,type,origin_filename,extension_name,size,width,height,alt,title) VALUES`
+          const insertImageSQLValues = []
           for (const image of images) {
-            console.log('[updateAll]进入循环....')
-            const { id } = image
-            if (id) {
-              imageIds.push(id)
-              if (!image.isModify) continue
-            }
-            // 如果图片不是新上传的且没有任何修改，就无需执行任何sql
-            delete image.isModify
-            let imageSQL = `UPDATE ${imageTable.table} SET used=${image.used}, type='${image.type}' WHERE id=${id}`
-            if (!id) {
-              delete image.id
-              // remove掉协议头
-              image.url = Utils.removeProtocolHead(image.url)
-              imageSQL = `INSERT ${imageTable.table} SET ?`
-            }
-            console.log('[updateAll]图片的sql语句为：', imageSQL)
-            batch.push(this.exec(imageSQL, image))
+            let {url, used, type, origin_filename, extension_name, size, width, height, alt, title} = image
+            insertImageSQLValues.push(
+              `(${id}, ${imageTable.escape(Utils.removeProtocolHead(url))}, ${used}, ${type || 0}, ${imageTable.escape(origin_filename)}, ${imageTable.escape(extension_name)}, ${size}, ${width}, ${height}, ${imageTable.escape(alt || '')}, ${imageTable.escape(title || '')})`
+            )
           }
-          // // 如果在界面上删除了图片，则需要把数据库中的数据也一同删除掉
-          // if (imageIds.length > 0) {
-          //   // let deleteImageSQL = `DELETE FROM ${imageTable.table} WHERE id NOT IN (${imageIds.join(',')})`
-          //   // 发现了一个大BUG，删除了其他文章的图片，数据库中将近100万张图片被我删除光了
-          //   let deleteImageSQL = `DELETE FROM ${imageTable.table} WHERE aid = ${id} AND id NOT IN (${imageIds.join(',')})`
-          //   console.log('deleteImageSQL:', deleteImageSQL)
-          //   batch.push(this.exec(deleteImageSQL))
-          // }
+          insertImageSQL = insertImageSQL + insertImageSQLValues.join(',')
+          console.log('insertImageSQL:', insertImageSQL)
+          batch.push(this.exec(insertImageSQL))
         }
+        // if (Utils.isValidArray(images)) {
+        //   // tid url type origin_filename extension_name size width height
+        //   // const bulks = []
+        //   // let cols = Object.keys(images[0])
+        //   // console.log('articleMetaTable 58:', cols);
+        //   // for(const image of images){
+        //   //   bulks.push(_.values(image))
+        //   // }
+        //   // TODO:这块儿需要修改，由于是异步的，
+        //   // 不能执行先删后插的操作，删除可能在插入之后执行
+        //   // 不要信任异步操作的顺序
+        //   // batch.push(this.exec(`DELETE FROM ${imageTable.table} where aid=${id}`))
+        //   // console.log('articleMetaTable 124', cols)
+        //   // batch.push(this.exec(`INSERT INTO ${imageTable.table} (${cols}) VALUES ?`, [bulks]))
+        //   // batch.push(this.exec(`INSERT INTO ${imageTable.table} (aid,url,type,used,origin_filename,extension_name,size,width,height) VALUES ?`, [bulks]))
+        //   // 需要根据上传的image是否有id来确定是UPDATE或INSERT
+        //   console.log('[updateAll]要保存的图片为：', images)
+        //   // let imageIds = []
+        //   for (const image of images) {
+        //     console.log('[updateAll]进入循环....')
+        //     const { id } = image
+        //     if (id) {
+        //       // imageIds.push(id)
+        //       if (!image.isModify) continue
+        //     }
+        //     // 如果图片不是新上传的且没有任何修改，就无需执行任何sql
+        //     delete image.isModify
+        //     let imageSQL = `UPDATE ${imageTable.table} SET used=${image.used}, type='${image.type}' WHERE id=${id}`
+        //     if (!id) {
+        //       delete image.id
+        //       // remove掉协议头
+        //       image.url = Utils.removeProtocolHead(image.url)
+        //       imageSQL = `INSERT ${imageTable.table} SET ?`
+        //     }
+        //     console.log('[updateAll]图片的sql语句为：', imageSQL)
+        //     batch.push(this.exec(imageSQL, image))
+        //   }
+        //   // // 如果在界面上删除了图片，则需要把数据库中的数据也一同删除掉
+        //   // if (imageIds.length > 0) {
+        //   //   // let deleteImageSQL = `DELETE FROM ${imageTable.table} WHERE id NOT IN (${imageIds.join(',')})`
+        //   //   // 发现了一个大BUG，删除了其他文章的图片，数据库中将近100万张图片被我删除光了
+        //   //   let deleteImageSQL = `DELETE FROM ${imageTable.table} WHERE aid = ${id} AND id NOT IN (${imageIds.join(',')})`
+        //   //   console.log('deleteImageSQL:', deleteImageSQL)
+        //   //   batch.push(this.exec(deleteImageSQL))
+        //   // }
+        // }
 
         /**
          * 2017-06-07 先下掉关键词、tag、gift
