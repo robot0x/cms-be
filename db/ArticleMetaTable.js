@@ -342,7 +342,15 @@ class ArticleMetaTable extends Table {
           if (_.isEmpty(keywords)) {
             keywords = DEFAULT_NULL_KEY
           } else {
-            keywords = Object.assign(DEFAULT_NULL_KEY, JSON.parse(keywords))
+            let keyObj = JSON.parse(keywords)
+            // 处理一下不可见字符
+            Object.keys(keyObj).forEach(ke => {
+              let val = keyObj[ke]
+              if (!val) return
+              keyObj[ke] = val.split(/\s/).map(v => Utils.removeInvilidChar(v)).join(' ')
+            })
+            keywords = Object.assign(DEFAULT_NULL_KEY, keyObj)
+            console.log('[updateAll] keywords:', keywords)
           }
           // 一定要注意操作keyword表要小心，会影响线上搜索
           // 如果keywords字段为空，则用默认的json代替，否则的话搜索会挂

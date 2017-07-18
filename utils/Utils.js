@@ -1,5 +1,10 @@
 const crypto = require('crypto')
 class Utils {
+  static removeInvilidChar (char) {
+    if (!char || typeof char !== 'string') return ''
+    return char.trim().replace(/[\x00-\x1F\x7F-\x9F]/g, '')
+  }
+
   static getSha1 (text) {
     // http://www.nodeclass.com/articles/63795
     // return crypto.createHmac('sha1', key).update(text, 'utf8').digest('HEX')
