@@ -1,5 +1,12 @@
 const crypto = require('crypto')
 class Utils {
+  /**
+   * @static
+   * @param {string} char
+   * @returns
+   * @memberof Utils
+   * 传入的char两边trim之后，在去掉控制字符
+   */
   static removeInvilidChar (char) {
     if (!char || typeof char !== 'string') return ''
     return char.trim().replace(/[\x00-\x1F\x7F-\x9F]/g, '')

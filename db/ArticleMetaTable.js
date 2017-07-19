@@ -347,6 +347,7 @@ class ArticleMetaTable extends Table {
             Object.keys(keyObj).forEach(ke => {
               let val = keyObj[ke]
               if (!val) return
+              // 两边trim之后，在去掉控制字符，然后用空格隔开每个keyword
               keyObj[ke] = val.split(/\s/).map(v => Utils.removeInvilidChar(v)).join(' ')
             })
             keywords = Object.assign(DEFAULT_NULL_KEY, keyObj)
