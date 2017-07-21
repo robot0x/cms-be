@@ -41,6 +41,7 @@ router.get('/vid/query/person/', (req, res, next) => {
 // CMS后台相关restful接口
 router.all(/(\w+)/i, requestHandler)
 function requestHandler (req, res, next) {
+  console.log('[requestHandler] exec ....')
   // console.log('CMS后台相关restful接口命中 ...，params:', req.params)
   // 获取请求参数
   const action = API[req.params[0]]
