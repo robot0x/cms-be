@@ -11,7 +11,10 @@ const aliVideoService = new AliVideoService()
 // 路由顺序跟书写顺序是一致的
 router.get('/vid/callback/rawupdate', (req, res, next) => {
   console.log('[/vid/callback/rawupdate]视频管理相关接口命中 ...')
-  console.log(req.body)
+  console.log(`[/vid/callback/rawupdate]'s req.body:`, req.body)
+  res.json({
+    status: 'ok'
+  })
   next()
 })
 // 客户端请求上传token
