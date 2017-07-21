@@ -76,7 +76,7 @@ class ArticlesService {
         promise = articleMetaTable.getAll()
       }
 
-      if (param.id && _.toInteger(id)) {
+      if (id && _.toInteger(id)) {
         promise = articleMetaTable.getById(id)
       }
 
@@ -84,11 +84,11 @@ class ArticlesService {
         promise = articleMetaTable.getByTitle(title, null, limitObj, 'like' in param)
       }
 
-      if (param.ctype) {
+      if (ctype) {
         promise = articleMetaTable.getByCtype(ctype, null, limitObj)
       }
 
-      if (param.user) {
+      if (user) {
         promise = articleMetaTable.getByUser(user, null, limitObj, 'like' in param)
       }
 

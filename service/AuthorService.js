@@ -45,7 +45,13 @@ class AuthorService {
   list (param) {
     console.log('AuthorService 45:', param)
     return new Promise((resolve, reject) => {
-      authorTable.getAll(null, param).then(rows => resolve(rows)).catch(err => {
+      let promise = null
+      if (!param || _.isEmpty(param)) {
+        promise = authorTable.getUserAndCount()
+      } else {
+        promise = authorTable.getAll(null, param)
+      }
+      promise.then(result => resolve(result)).catch(err => {
         Log.exception(err)
         reject(err)
       })

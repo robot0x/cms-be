@@ -110,22 +110,15 @@ class UserTable extends Table {
     return data
   }
   /**
-   * 
+   *
    * 输入token，输出该token对应的username
-   * 
-   * @param {string} token 
+   * @param {string} token
    * @memberof UserTable
    */
   async tokenToUsername (token) {
     let user = await this.getByToken(token)
     if (!Utils.isValidArray(user)) return
     return user[0].name
-  }
-
-  getUserAndCount () {
-    return super.exec(
-      `SELECT user AS name, COUNT(a.id) AS count FROM diaodiao_article_meta AS a, ${this.table} AS u WHERE a.user = u.name GROUP BY u.name`
-    )
   }
 }
 

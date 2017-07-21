@@ -75,6 +75,11 @@ class AuthorTable extends Table {
         })
     })
   }
+  getUserAndCount () {
+    return super.exec(
+      `SELECT author.source AS name, COUNT(meta.id) AS count FROM diaodiao_article_meta AS meta, ${this.table} AS author WHERE meta.author = author.source GROUP BY author.source ORDER BY count DESC`
+    )
+  }
 }
 
 module.exports = AuthorTable
