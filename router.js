@@ -11,7 +11,7 @@ const aliVideoService = new AliVideoService()
 
 // 路由顺序跟书写顺序是一致的
 router.get('/vid/callback/rawupdate', (req, res, next) => {
-  console.log('视频管理相关接口命中 ...')
+  console.log('[/vid/callback/rawupdate]视频管理相关接口命中 ...')
   console.log(req.body)
   next()
 })
@@ -173,7 +173,5 @@ function checkArgs (action, method, body) {
     isValid: true
   }
 }
-
-
 
 module.exports = router

@@ -17,6 +17,11 @@ const getCharset = req => {
   charset = match[1]
   return charset.trim().toLowerCase()
 }
+// 不经过token验证的接口
+let noTokenAuthList = [
+  /\/users\/\?user=(.+?)&password=(.+)/i,
+  /^\/vid/i
+]
 module.exports = {
   async tokenAuth (req, res, next) {
     /**
@@ -30,8 +35,7 @@ module.exports = {
     let url = req.url
     console.log(JSON.stringify(req.headers))
     // 如果是登录接口，不进行token验证，直接放行即可
-    if (/\/users\/\?user=(.+?)&password=(.+)/i.test(url)) {
-      console.log('命中登录接口')
+    if (noTokenAuthList.some(reg => reg.test(url))) {
       next()
     } else {
       let authenticationHeader = req.get('authentication')
