@@ -362,10 +362,10 @@ class ArticleMetaTable extends Table {
               INSERT INTO
                 diaodiao_article_keywords (aid,used_for_search,keywords)
               VALUES
-                (${id},${used_for_search},'${key}')
+                (${id},${used_for_search},'${this.escape(key)}')
               ON DUPLICATE KEY
               UPDATE
-                used_for_search = ${used_for_search}, keywords = '${key}'`
+                used_for_search = ${used_for_search}, keywords = '${this.escape(key)}'`
             )
           )
         }
