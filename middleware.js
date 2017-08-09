@@ -39,7 +39,7 @@ module.exports = {
       next()
     } else {
       let authenticationHeader = req.get('authentication')
-      let authenticationCookie = req.cookies.token
+      let authenticationCookie = req.cookies.cms_token || req.cookies.token
       let token = authenticationCookie || authenticationHeader || ''
       let INVALID = {
         status: 401,
