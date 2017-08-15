@@ -5,43 +5,11 @@ const _ = require('lodash')
 const Log = require('./utils/Log')
 const ServiceFactory = require('./service/ServiceFactory')
 const serverTimestamp = Date.now()
-const AliVideoService = require('./service/AliVideoService')
-const aliVideoService = new AliVideoService()
-
-// 路由顺序跟书写顺序是一致的
-router.get('/vid/callback/rawupdate', (req, res, next) => {
-  console.log('[/vid/callback/rawupdate]视频管理相关接口命中 ...')
-  console.log(`[/vid/callback/rawupdate]'s req.body:`, req.body)
-  res.json({
-    status: 'ok'
-  })
-  next()
-})
-// 客户端请求上传token
-router.get('/vid/token', (req, res, next) => {
-  console.log('视频管理相关接口命中 ...')
-  aliVideoService.genUploadToken
-  res.json({
-    status: 200,
-    server_timestamp: Date.now(),
-    message: 'SUCCESS',
-    res: {
-      token: aliVideoService.genUploadToken()
-    }
-  })
-})
-// 视频管理相关接口
-router.get('/vid/query/person/', (req, res, next) => {
-  console.log('视频管理相关接口命中 ...')
-  res.json({
-    hello: 'hello'
-  })
-})
 
 // CMS后台相关restful接口
 router.all(/(\w+)/i, requestHandler)
 function requestHandler (req, res, next) {
-  console.log('[requestHandler] exec ....')
+  console.log('[requestHandler] exec ....,', API[req.params[0]])
   // console.log('CMS后台相关restful接口命中 ...，params:', req.params)
   // 获取请求参数
   const action = API[req.params[0]]
