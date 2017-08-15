@@ -69,10 +69,9 @@ module.exports = {
   },
 
   allowCors (req, res, next) {
-    let { headers } = req
     // 如果带cookie，必须不能设置为 * ，也不能设置为 a.dx2.com, b.dx2.com ... 等
     // 只能设置为一个值
-    res.header('Access-Control-Allow-Origin', headers.origin)
+    res.header('Access-Control-Allow-Origin', req.headers.origin)
     res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
     // 如果前端fetch或ajax带cookie的话，必须设置Î credentials 头为true
     res.header('Access-Control-Allow-Credentials', true)
